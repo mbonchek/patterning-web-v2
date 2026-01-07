@@ -14,6 +14,60 @@ export async function generateWord(word: string) {
   return res.json();
 }
 
+export async function streamWordGeneration(
+  word: string,
+  onUpdate: (data: any) => void,
+  onComplete: () => void,
+  onError: (error: string) => void
+) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/word/${word}/stream`, {
+      method: 'GET',
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const reader = response.body?.getReader();
+    const decoder = new TextDecoder();
+
+    if (!reader) {
+      throw new Error('No response body');
+    }
+
+    while (true) {
+      const { done, value } = await reader.read();
+      
+      if (done) {
+        onComplete();
+        break;
+      }
+
+      const chunk = decoder.decode(value);
+      const lines = chunk.split('\n');
+
+      for (const line of lines) {
+        if (line.startsWith('data: ')) {
+          try {
+            const data = JSON.parse(line.slice(6));
+            onUpdate(data);
+
+            if (data.status === 'error') {
+              onError(data.message || 'Unknown error occurred');
+              return;
+            }
+          } catch (e) {
+            console.error('Failed to parse SSE data:', e);
+          }
+        }
+      }
+    }
+  } catch (error) {
+    onError(error instanceof Error ? error.message : 'Failed to generate pattern');
+  }
+}
+
 export async function listPrompts() {
   const res = await fetch(`${API_BASE_URL}/prompts`);
   if (!res.ok) throw new Error('Failed to list prompts');
