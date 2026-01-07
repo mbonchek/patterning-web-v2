@@ -8,7 +8,7 @@ interface Pattern {
   created_at: string;
 }
 
-export function Sidebar({ onSelect }: { onSelect: (pattern: any) => void }) {
+export function Sidebar({ onSelect, onViewChange }: { onSelect: (pattern: any) => void, onViewChange: (view: 'patterns' | 'prompts') => void }) {
   const [patterns, setPatterns] = useState<Pattern[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -30,14 +30,20 @@ export function Sidebar({ onSelect }: { onSelect: (pattern: any) => void }) {
 
   return (
     <div className="w-64 border-r border-border bg-muted/10 h-screen flex flex-col">
-      <div className="p-4 border-b border-border flex items-center justify-between">
-        <h1 className="font-bold text-lg flex items-center gap-2">
-          <Layers className="w-5 h-5" />
-          Patterning
-        </h1>
-        <button onClick={loadHistory} className="p-1 hover:bg-muted rounded">
-          <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-        </button>
+      <div className="p-4 border-b border-border flex flex-col gap-4">
+        <div className="flex items-center justify-between">
+          <h1 className="font-bold text-lg flex items-center gap-2">
+            <Layers className="w-5 h-5" />
+            Patterning
+          </h1>
+          <button onClick={loadHistory} className="p-1 hover:bg-muted rounded">
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+          </button>
+        </div>
+        <div className="flex gap-2">
+          <button onClick={() => onViewChange('patterns')} className="flex-1 text-xs bg-muted hover:bg-muted/80 py-1 rounded">Patterns</button>
+          <button onClick={() => onViewChange('prompts')} className="flex-1 text-xs bg-muted hover:bg-muted/80 py-1 rounded">Prompts</button>
+        </div>
       </div>
       
       <div className="flex-1 overflow-y-auto p-2 space-y-1">

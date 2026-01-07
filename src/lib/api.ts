@@ -14,6 +14,28 @@ export async function generateWord(word: string) {
   return res.json();
 }
 
+export async function listPrompts() {
+  const res = await fetch(`${API_BASE_URL}/prompts`);
+  if (!res.ok) throw new Error('Failed to list prompts');
+  return res.json();
+}
+
+export async function getPrompt(slug: string) {
+  const res = await fetch(`${API_BASE_URL}/prompts/${slug}`);
+  if (!res.ok) throw new Error('Failed to get prompt');
+  return res.json();
+}
+
+export async function updatePrompt(slug: string, data: any) {
+  const res = await fetch(`${API_BASE_URL}/prompts/${slug}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error('Failed to update prompt');
+  return res.json();
+}
+
 export async function testPrompt(type: 'text' | 'image', data: any) {
   const res = await fetch(`${API_BASE_URL}/playground/test`, {
     method: 'POST',
