@@ -30,7 +30,7 @@ export default function PatternDetail() {
       try {
         setLoading(true);
         console.log('Fetching pattern for word:', word);
-        const response = await fetch(`http://localhost:8080/api/word/${word}`);
+        const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/word/${word}`);
         console.log('Response status:', response.status);
         if (!response.ok) throw new Error('Pattern not found');
         const data = await response.json();
