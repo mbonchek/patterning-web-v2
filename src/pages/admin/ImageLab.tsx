@@ -3,6 +3,7 @@ import { Image as ImageIcon, Loader2, Play } from 'lucide-react';
 
 export function ImageLab() {
   const [brief, setBrief] = useState('');
+  const [essence, setEssence] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   
   const [availableWords, setAvailableWords] = useState<any[]>([]);
@@ -12,7 +13,7 @@ export function ImageLab() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/history`)
+    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/history`)
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) setAvailableWords(data);
@@ -22,8 +23,9 @@ export function ImageLab() {
 
   const handleLoadBrief = (selectedWord: string) => {
     const pattern = availableWords.find(p => p.word === selectedWord);
-    if (pattern && pattern.image_brief) {
-      setBrief(pattern.image_brief);
+    if (pattern) {
+      setEssence(pattern.essence || '');
+      setBrief(pattern.image_brief || '');
       setSentRequest(null);
       setReceivedResponse(null);
       setGeneratedImageUrl(null);
@@ -105,9 +107,21 @@ export function ImageLab() {
                 </select>
               </div>
 
+              {/* Essence (read-only) */}
+              <div>
+                <label className="block text-xs font-medium text-slate-400 mb-2">Essence (from pattern)</label>
+                <textarea
+                  value={essence}
+                  readOnly
+                  placeholder="Select a word to load essence..."
+                  rows={4}
+                  className="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-slate-400 text-sm font-mono focus:outline-none resize-none"
+                />
+              </div>
+
               {/* Brief */}
               <div>
-                <label className="block text-xs font-medium text-slate-400 mb-2">Image Brief</label>
+                <label className="block text-xs font-medium text-slate-400 mb-2">Image Brief (from pattern)</label>
                 <textarea
                   value={brief}
                   onChange={(e) => setBrief(e.target.value)}
