@@ -51,7 +51,7 @@ export function Library() {
   const fetchHistory = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080/api'}/history?t=${Date.now()}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/history?t=${Date.now()}`, {
         headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate' }
       });
       if (res.ok) {
@@ -82,7 +82,7 @@ export function Library() {
 
     setProcessingAction(true);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080/api'}/manage-pattern`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/manage-pattern`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 

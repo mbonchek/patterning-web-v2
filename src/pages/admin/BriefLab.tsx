@@ -16,7 +16,7 @@ export function BriefLab() {
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080/api'}/history`)
+    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/history`)
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) setAvailableWords(data);
@@ -61,7 +61,7 @@ export function BriefLab() {
         layers
       };
       
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080/api'}/generate-brief`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/generate-brief`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(request)

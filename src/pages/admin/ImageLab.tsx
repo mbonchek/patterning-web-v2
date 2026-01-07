@@ -12,7 +12,7 @@ export function ImageLab() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080/api'}/history`)
+    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/history`)
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) setAvailableWords(data);
@@ -46,7 +46,7 @@ export function ImageLab() {
     try {
       const request = { brief };
       
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080/api'}/generate-image`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/generate-image`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(request)

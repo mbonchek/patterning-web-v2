@@ -32,7 +32,7 @@ export function Prompts() {
   const fetchPrompts = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080/api'}/prompts`);
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/prompts`);
       if (res.ok) {
         const data = await res.json();
         setPrompts(data);
@@ -56,7 +56,7 @@ export function Prompts() {
     
     setActivatingId(id);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080/api'}/prompts/activate`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/prompts/activate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, slug })
