@@ -219,7 +219,8 @@ export function PromptEditor() {
         body: JSON.stringify({
           template: template,
           inputs: testInputs,
-          config: config
+          config: config,
+          slug: prompt?.slug || ''
         })
       });
 
