@@ -7,8 +7,7 @@ interface Prompt {
   slug: string;
   version: number;
   version_label?: string;
-  system_template: string;
-  user_template: string;
+  template: string;
   is_active: boolean;
   description: string;
   created_at: string;
@@ -16,6 +15,7 @@ interface Prompt {
   top_p?: number;
   top_k?: number;
   max_tokens?: number;
+  input_variables?: string[];
 }
 
 export function Prompts() {

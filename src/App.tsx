@@ -6,6 +6,7 @@ import { Prompts } from './pages/admin/Prompts';
 import { PromptEditor } from './pages/admin/PromptEditor';
 import { BriefLab } from './pages/admin/BriefLab';
 import { ImageLab } from './pages/admin/ImageLab';
+import { VoiceLab } from './pages/admin/VoiceLab';
 
 function App() {
   return (
@@ -22,7 +23,7 @@ function App() {
               <Route path="library" element={<Library />} />
               <Route path="prompts" element={<Prompts />} />
               <Route path="prompts/:id" element={<PromptEditor />} />
-              <Route path="voice" element={<div className="text-white">Voice Lab (Coming Soon)</div>} />
+              <Route path="voice" element={<VoiceLab />} />
               <Route path="test-brief" element={<BriefLab />} />
               <Route path="test-image" element={<ImageLab />} />
               <Route path="playground" element={<div className="text-white">Playground (Coming Soon)</div>} />

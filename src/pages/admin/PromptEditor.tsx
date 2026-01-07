@@ -1,19 +1,29 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save, Settings } from 'lucide-react';
+import { ArrowLeft, Save, Settings, Play, Loader2 } from 'lucide-react';
 
 interface Prompt {
   id: string;
   slug: string;
   version: number;
-  system_template: string;
-  user_template: string;
+  template: string;
   is_active: boolean;
   description: string;
   temperature?: number;
   top_p?: number;
   top_k?: number;
   max_tokens?: number;
+  input_variables?: string[];
+}
+
+interface Pattern {
+  id: string;
+  word: string;
+  layers?: string;
+  voicing?: string;
+  essence?: string;
+  image_brief?: string;
+  image_url?: string;
 }
 
 export function PromptEditor() {
@@ -24,8 +34,7 @@ export function PromptEditor() {
   const [saving, setSaving] = useState(false);
   
   // Editor State
-  const [systemTemplate, setSystemTemplate] = useState('');
-  const [userTemplate, setUserTemplate] = useState('');
+  const [template, setTemplate] = useState('');
   const [description, setDescription] = useState('');
   const [showSettings, setShowSettings] = useState(false);
 
@@ -37,8 +46,16 @@ export function PromptEditor() {
     top_k: 40
   });
 
+  // Playground State
+  const [showPlayground, setShowPlayground] = useState(false);
+  const [recentPatterns, setRecentPatterns] = useState<Pattern[]>([]);
+  const [testInputs, setTestInputs] = useState<Record<string, string>>({});
+  const [testOutput, setTestOutput] = useState<string | null>(null);
+  const [testing, setTesting] = useState(false);
+
   useEffect(() => {
     loadPrompt();
+    loadRecentPatterns();
   }, [id]);
 
   const loadPrompt = async () => {
@@ -46,12 +63,11 @@ export function PromptEditor() {
     
     setLoading(true);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080/api'}/prompts/${id}`);
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/admin/prompts/${id}`);
       if (res.ok) {
         const data = await res.json();
         setPrompt(data);
-        setSystemTemplate(data.system_template || '');
-        setUserTemplate(data.user_template || '');
+        setTemplate(data.template || '');
         setDescription(data.description || '');
         setConfig({
           temperature: data.temperature ?? 0.7,
@@ -59,6 +75,11 @@ export function PromptEditor() {
           top_p: data.top_p ?? 0.95,
           top_k: data.top_k ?? 40
         });
+
+        // Initialize test inputs based on input_variables
+        const inputs: Record<string, string> = {};
+        (data.input_variables || []).forEach((v: string) => inputs[v] = '');
+        setTestInputs(inputs);
       }
     } catch (error) {
       console.error('Error loading prompt:', error);
@@ -67,17 +88,78 @@ export function PromptEditor() {
     }
   };
 
+  const loadRecentPatterns = async () => {
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/history`);
+      if (res.ok) {
+        const data = await res.json();
+        setRecentPatterns(data.slice(0, 10));
+      }
+    } catch (error) {
+      console.error('Error loading patterns:', error);
+    }
+  };
+
+  const handleLoadPattern = (pattern: Pattern) => {
+    const newInputs = { ...testInputs };
+    const vars = prompt?.input_variables || [];
+
+    if (pattern.word && vars.includes('word')) newInputs['word'] = pattern.word;
+    if (pattern.layers && vars.includes('layers')) newInputs['layers'] = pattern.layers;
+    if (pattern.voicing) {
+      if (vars.includes('voicing')) newInputs['voicing'] = pattern.voicing;
+      if (vars.includes('word_voicing')) newInputs['word_voicing'] = pattern.voicing;
+    }
+    if (pattern.essence && vars.includes('essence')) newInputs['essence'] = pattern.essence;
+    if (pattern.image_brief && vars.includes('brief')) newInputs['brief'] = pattern.image_brief;
+
+    setTestInputs(newInputs);
+  };
+
+  const handleTestPrompt = async () => {
+    if (!prompt) return;
+
+    setTesting(true);
+    setTestOutput(null);
+
+    try {
+      // Replace variables in template
+      let finalPrompt = template;
+      Object.entries(testInputs).forEach(([key, value]) => {
+        finalPrompt = finalPrompt.replace(new RegExp(`{{${key}}}`, 'g'), value);
+      });
+
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/playground/test`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'text',
+          system_prompt: '', // System prompt is loaded from the system slug
+          user_prompt: finalPrompt
+        })
+      });
+
+      const data = await res.json();
+      if (data.content) {
+        setTestOutput(data.content);
+      }
+    } catch (error) {
+      console.error('Error testing prompt:', error);
+    } finally {
+      setTesting(false);
+    }
+  };
+
   const handleSave = async () => {
     if (!prompt) return;
     
     setSaving(true);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080/api'}/prompts/${id}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/admin/prompts/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          system_template: systemTemplate,
-          user_template: userTemplate,
+          template,
           description,
           ...config
         })
@@ -140,6 +222,17 @@ export function PromptEditor() {
           >
             <Settings size={16} />
             Settings
+          </button>
+          <button
+            onClick={() => setShowPlayground(!showPlayground)}
+            className={`px-3 py-2 rounded flex items-center gap-2 transition-colors ${
+              showPlayground 
+                ? 'bg-teal-900/30 text-teal-400' 
+                : 'bg-slate-800 hover:bg-slate-700 text-white'
+            }`}
+          >
+            <Play size={16} />
+            Playground
           </button>
           <button
             onClick={handleSave}
@@ -207,6 +300,73 @@ export function PromptEditor() {
         </div>
       )}
 
+      {/* Playground Panel */}
+      {showPlayground && (
+        <div className="mb-6 bg-slate-900/50 border border-slate-800 rounded-xl p-6">
+          <h2 className="text-lg font-bold text-white mb-4">Playground</h2>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Left: Inputs */}
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm text-slate-400 mb-2">Load Recent Pattern</label>
+                <select
+                  onChange={(e) => {
+                    const pattern = recentPatterns.find(p => p.word === e.target.value);
+                    if (pattern) handleLoadPattern(pattern);
+                  }}
+                  className="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-white text-sm focus:outline-none focus:border-teal-500"
+                >
+                  <option value="">Select a pattern...</option>
+                  {recentPatterns.map(p => (
+                    <option key={p.id} value={p.word}>{p.word}</option>
+                  ))}
+                </select>
+              </div>
+
+              {prompt.input_variables?.map(varName => (
+                <div key={varName}>
+                  <label className="block text-sm text-slate-400 mb-2 capitalize">{varName}</label>
+                  <textarea
+                    value={testInputs[varName] || ''}
+                    onChange={(e) => setTestInputs({ ...testInputs, [varName]: e.target.value })}
+                    placeholder={`Enter ${varName}...`}
+                    rows={3}
+                    className="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-white text-sm font-mono focus:outline-none focus:border-teal-500 resize-y"
+                  />
+                </div>
+              ))}
+
+              <button
+                onClick={handleTestPrompt}
+                disabled={testing}
+                className="w-full bg-teal-600 hover:bg-teal-500 text-white px-4 py-3 rounded flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
+              >
+                {testing ? (
+                  <>
+                    <Loader2 className="animate-spin" size={18} />
+                    Testing...
+                  </>
+                ) : (
+                  <>
+                    <Play size={18} />
+                    Test Prompt
+                  </>
+                )}
+              </button>
+            </div>
+
+            {/* Right: Output */}
+            <div>
+              <label className="block text-sm text-slate-400 mb-2">Output</label>
+              <div className="bg-slate-950 border border-slate-800 rounded p-4 text-sm text-slate-300 font-mono whitespace-pre-wrap min-h-[400px] max-h-[600px] overflow-y-auto">
+                {testOutput || 'Output will appear here...'}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Description */}
       <div className="mb-6">
         <label className="block text-sm font-medium text-slate-400 mb-2">Description</label>
@@ -219,26 +379,28 @@ export function PromptEditor() {
         />
       </div>
 
-      {/* System Template */}
-      <div className="mb-6">
-        <label className="block text-sm font-medium text-slate-400 mb-2">System Template</label>
-        <textarea
-          value={systemTemplate}
-          onChange={(e) => setSystemTemplate(e.target.value)}
-          placeholder="System instructions..."
-          rows={8}
-          className="w-full bg-slate-900 border border-slate-800 rounded px-4 py-3 text-white font-mono text-sm focus:outline-none focus:border-teal-500 resize-y"
-        />
-      </div>
+      {/* Input Variables */}
+      {prompt.input_variables && prompt.input_variables.length > 0 && (
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-slate-400 mb-2">Input Variables</label>
+          <div className="flex flex-wrap gap-2">
+            {prompt.input_variables.map(v => (
+              <span key={v} className="px-3 py-1 bg-slate-800 text-slate-300 rounded-full text-sm font-mono">
+                {`{{${v}}}`}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
 
-      {/* User Template */}
+      {/* Template */}
       <div className="mb-6">
-        <label className="block text-sm font-medium text-slate-400 mb-2">User Template</label>
+        <label className="block text-sm font-medium text-slate-400 mb-2">Prompt Template</label>
         <textarea
-          value={userTemplate}
-          onChange={(e) => setUserTemplate(e.target.value)}
-          placeholder="User message template with {{variables}}..."
-          rows={12}
+          value={template}
+          onChange={(e) => setTemplate(e.target.value)}
+          placeholder="Prompt template with {{variables}}..."
+          rows={16}
           className="w-full bg-slate-900 border border-slate-800 rounded px-4 py-3 text-white font-mono text-sm focus:outline-none focus:border-teal-500 resize-y"
         />
         <p className="text-xs text-slate-500 mt-2">
