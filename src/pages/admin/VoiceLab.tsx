@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Mic2, Play, AlertCircle, CheckCircle, Loader2, ChevronRight, ChevronDown, RefreshCw, Globe, Clock, ArrowRight } from 'lucide-react';
+import { Mic2, Play, AlertCircle, CheckCircle, Loader2, ChevronRight, ChevronDown, RefreshCw, Globe, Clock } from 'lucide-react';
 
 interface HttpTrace {
   timestamp: string;
