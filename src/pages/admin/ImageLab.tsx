@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Image as ImageIcon, Loader2, Play } from 'lucide-react';
 
 export function ImageLab() {
+  const [word, setWord] = useState('');
   const [brief, setBrief] = useState('');
   const [essence, setEssence] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
@@ -24,6 +25,7 @@ export function ImageLab() {
   const handleLoadBrief = (selectedWord: string) => {
     const pattern = availableWords.find(p => p.word === selectedWord);
     if (pattern) {
+      setWord(selectedWord);
       setEssence(pattern.essence || '');
       setBrief(pattern.image_brief || '');
       setSentRequest(null);
@@ -46,7 +48,11 @@ export function ImageLab() {
     setGeneratedImageUrl(null);
 
     try {
-      const request = { brief };
+      const request = { 
+        word: word || 'test',
+        essence: essence || '',
+        brief 
+      };
       
       const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/generate-image`, {
         method: 'POST',
