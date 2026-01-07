@@ -36,14 +36,14 @@ export default function PatternDetail() {
         const data = await response.json();
         console.log('Pattern data received:', data);
         
-        // Transform the nested data structure
+        // API returns flat structure, use directly
         const transformedPattern: Pattern = {
           word: data.word || word,
-          image_url: data.voicings?.[0]?.essences?.[0]?.briefs?.[0]?.images?.[0]?.image_url,
-          essence: data.voicings?.[0]?.essences?.[0]?.essence_text,
-          brief: data.voicings?.[0]?.essences?.[0]?.briefs?.[0]?.brief_text,
-          voicing: data.voicings?.[0]?.voicing_text,
-          layers: data.layers_text,
+          image_url: data.image_url,
+          essence: data.essence,
+          brief: data.brief,
+          voicing: data.voicing,
+          layers: data.layers,
           created_at: data.created_at
         };
         
