@@ -7,6 +7,7 @@ import { PromptEditor } from './pages/admin/PromptEditor';
 import { BriefLab } from './pages/admin/BriefLab';
 import { ImageLab } from './pages/admin/ImageLab';
 import { VoiceLab } from './pages/admin/VoiceLab';
+import PatternDetail from './pages/PatternDetail';
 
 function App() {
   return (
@@ -31,6 +32,9 @@ function App() {
             </Routes>
           </AdminLayout>
         } />
+        
+        {/* Public Pattern Detail Route - Must come after /admin/* */}
+        <Route path="/:word" element={<PatternDetail />} />
       </Routes>
     </BrowserRouter>
   );

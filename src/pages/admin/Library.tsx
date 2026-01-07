@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   Search, 
  
@@ -30,6 +31,7 @@ interface Pattern {
 }
 
 export function Library() {
+  const navigate = useNavigate();
   const [patterns, setPatterns] = useState<Pattern[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -157,11 +159,17 @@ export function Library() {
       ) : viewMode === 'grid' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filteredPatterns.map((pattern) => (
-            <div key={pattern.id} className="group bg-slate-900/50 border border-slate-800 hover:border-teal-500/50 rounded-xl overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-teal-900/10 flex flex-col relative">
+            <div 
+              key={pattern.id} 
+              className="group bg-slate-900/50 border border-slate-800 hover:border-teal-500/50 rounded-xl overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-teal-900/10 flex flex-col relative cursor-pointer"
+              onClick={() => navigate(`/${pattern.word}`)}
+            >
+              {/* Click Overlay Hint */}
+              <div className="absolute inset-0 bg-teal-500/0 group-hover:bg-teal-500/5 transition-colors duration-300 pointer-events-none z-10"></div>
               
               {/* Manage Button */}
               <button 
-                onClick={() => handleManage(pattern)}
+                onClick={(e) => { e.stopPropagation(); handleManage(pattern); }}
                 className="absolute top-3 right-3 z-20 p-2 bg-black/60 hover:bg-black/80 text-white rounded-full backdrop-blur-md opacity-0 group-hover:opacity-100 transition-opacity"
                 title="Manage Pattern"
               >
@@ -203,7 +211,7 @@ export function Library() {
                 {/* Component Status */}
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   <button
-                    onClick={() => handleInspect(pattern.layers, 'Layers', pattern.word)}
+                    onClick={(e) => { e.stopPropagation(); handleInspect(pattern.layers, 'Layers', pattern.word); }}
                     className={`flex items-center gap-2 px-2 py-1.5 rounded ${
                       pattern.layers 
                         ? 'bg-teal-500/10 text-teal-400 hover:bg-teal-500/20' 
@@ -215,7 +223,7 @@ export function Library() {
                     Layers
                   </button>
                   <button
-                    onClick={() => handleInspect(pattern.voicing, 'Voicing', pattern.word)}
+                    onClick={(e) => { e.stopPropagation(); handleInspect(pattern.voicing, 'Voicing', pattern.word); }}
                     className={`flex items-center gap-2 px-2 py-1.5 rounded ${
                       pattern.voicing 
                         ? 'bg-teal-500/10 text-teal-400 hover:bg-teal-500/20' 
@@ -227,7 +235,7 @@ export function Library() {
                     Voicing
                   </button>
                   <button
-                    onClick={() => handleInspect(pattern.essence, 'Essence', pattern.word)}
+                    onClick={(e) => { e.stopPropagation(); handleInspect(pattern.essence, 'Essence', pattern.word); }}
                     className={`flex items-center gap-2 px-2 py-1.5 rounded ${
                       pattern.essence 
                         ? 'bg-teal-500/10 text-teal-400 hover:bg-teal-500/20' 
@@ -239,7 +247,7 @@ export function Library() {
                     Essence
                   </button>
                   <button
-                    onClick={() => handleInspect(pattern.image_brief || null, 'Brief', pattern.word)}
+                    onClick={(e) => { e.stopPropagation(); handleInspect(pattern.image_brief || null, 'Brief', pattern.word); }}
                     className={`flex items-center gap-2 px-2 py-1.5 rounded ${
                       pattern.image_brief 
                         ? 'bg-teal-500/10 text-teal-400 hover:bg-teal-500/20' 
