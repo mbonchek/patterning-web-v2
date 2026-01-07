@@ -187,23 +187,45 @@ export function ImageLab() {
           )}
 
           {/* Trace Data */}
-          {sentRequest && (
+          {receivedResponse?.trace && (
             <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-6">
-              <h2 className="text-sm font-bold text-slate-400 uppercase mb-4">Trace Data</h2>
+              <h2 className="text-sm font-bold text-slate-400 uppercase mb-4">Full Trace</h2>
               
               <div className="space-y-4">
+                {/* Frontend Request */}
                 <div>
-                  <h3 className="text-xs font-bold text-slate-500 uppercase mb-2">Request Sent</h3>
+                  <h3 className="text-xs font-bold text-emerald-400 uppercase mb-2">Frontend → Backend</h3>
                   <div className="bg-slate-950 border border-slate-800 rounded p-3 text-xs text-slate-400 font-mono whitespace-pre-wrap max-h-48 overflow-y-auto">
                     {JSON.stringify(sentRequest, null, 2)}
                   </div>
                 </div>
 
-                {receivedResponse && (
+                {/* Gemini Request */}
+                {receivedResponse.trace.request && (
                   <div>
-                    <h3 className="text-xs font-bold text-slate-500 uppercase mb-2">Response Received</h3>
-                    <div className="bg-slate-950 border border-slate-800 rounded p-3 text-xs text-slate-400 font-mono whitespace-pre-wrap max-h-48 overflow-y-auto">
-                      {JSON.stringify(receivedResponse, null, 2)}
+                    <h3 className="text-xs font-bold text-blue-400 uppercase mb-2">Backend → Gemini API</h3>
+                    <div className="bg-slate-950 border border-slate-800 rounded p-3 text-xs text-slate-400 font-mono whitespace-pre-wrap max-h-96 overflow-y-auto">
+                      {JSON.stringify(receivedResponse.trace.request, null, 2)}
+                    </div>
+                  </div>
+                )}
+
+                {/* Gemini Response */}
+                {receivedResponse.trace.response && (
+                  <div>
+                    <h3 className="text-xs font-bold text-purple-400 uppercase mb-2">Gemini API → Backend</h3>
+                    <div className="bg-slate-950 border border-slate-800 rounded p-3 text-xs text-slate-400 font-mono whitespace-pre-wrap max-h-96 overflow-y-auto">
+                      {JSON.stringify(receivedResponse.trace.response, null, 2)}
+                    </div>
+                  </div>
+                )}
+
+                {/* Image Size */}
+                {receivedResponse.trace.image_bytes_size && (
+                  <div>
+                    <h3 className="text-xs font-bold text-teal-400 uppercase mb-2">Result</h3>
+                    <div className="bg-slate-950 border border-slate-800 rounded p-3 text-xs text-slate-400">
+                      Image size: {(receivedResponse.trace.image_bytes_size / 1024).toFixed(2)} KB
                     </div>
                   </div>
                 )}
