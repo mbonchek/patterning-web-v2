@@ -65,10 +65,9 @@ export function VoiceLab() {
       ));
 
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/word/${word}/stream`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ force })
+        const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/word/${word}/stream?force=${force}`, {
+          method: 'GET',
+          headers: { 'Accept': 'text/event-stream' }
         });
 
         if (!response.ok) throw new Error('Network response was not ok');
