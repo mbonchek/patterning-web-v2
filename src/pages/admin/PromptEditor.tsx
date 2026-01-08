@@ -73,6 +73,8 @@ export function PromptEditor() {
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [saveVersion, setSaveVersion] = useState('');
   const [saveComment, setSaveComment] = useState('');
+  const [saveAsActive, setSaveAsActive] = useState(true);
+  const [latestVersion, setLatestVersion] = useState<number | null>(null);
 
   // Version History State
   const [versionHistory, setVersionHistory] = useState<Prompt[]>([]);
@@ -218,6 +220,35 @@ export function PromptEditor() {
     }
   };
 
+  const handleMakeLive = async () => {
+    if (!prompt) return;
+    
+    if (!confirm(`Make version ${prompt.version} the active version?`)) {
+      return;
+    }
+    
+    setSaving(true);
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/admin/prompts/${prompt.id}/activate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      
+      if (res.ok) {
+        // Reload the prompt to reflect the change
+        await loadPrompt();
+        alert('Version activated successfully!');
+      } else {
+        const errorText = await res.text();
+        alert('Error activating version: ' + errorText);
+      }
+    } catch (error: any) {
+      alert('Error activating version: ' + error.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const handleSave = async () => {
     if (!prompt) return;
     
@@ -270,6 +301,8 @@ export function PromptEditor() {
       
       setSaveVersion(suggestedVersion);
       setSaveComment('');
+      setSaveAsActive(true); // Default to making it active
+      setLatestVersion(sameSlug.length > 0 ? versions[0] : null); // Store latest version for display
       setShowSaveDialog(true);
     } catch (error: any) {
       alert('Error preparing save: ' + error.message);
@@ -303,7 +336,7 @@ export function PromptEditor() {
           description: description,
           comment: saveComment.trim() || null,
           input_variables: detectedVars,
-          is_active: false,
+          is_active: saveAsActive,
           temperature: config.temperature,
           top_p: config.top_p,
           top_k: config.top_k,
@@ -464,6 +497,16 @@ export function PromptEditor() {
             <Settings size={18} />
             Settings
           </button>
+          {!prompt.is_active && (
+            <button 
+              onClick={handleMakeLive}
+              disabled={saving}
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-md flex items-center gap-2 transition-colors disabled:opacity-50 shadow-lg shadow-blue-900/20"
+            >
+              <Check size={18} />
+              Make Live
+            </button>
+          )}
           <button 
             onClick={handleSave}
             disabled={saving}
@@ -703,9 +746,16 @@ export function PromptEditor() {
           <div className="bg-slate-900 border border-slate-800 rounded-xl max-w-md w-full p-6">
             <h2 className="text-xl font-bold text-white mb-4">Save New Version</h2>
             
+            {latestVersion !== null && (
+              <div className="mb-4 p-3 bg-slate-950 border border-slate-800 rounded">
+                <p className="text-xs text-slate-500 uppercase tracking-widest">Latest Version</p>
+                <p className="text-lg font-mono text-teal-400 font-bold">v{latestVersion}</p>
+              </div>
+            )}
+            
             <div className="space-y-4">
               <div>
-                <label className="text-xs uppercase tracking-widest text-slate-500 mb-2 font-semibold block">Version Number</label>
+                <label className="text-xs uppercase tracking-widest text-slate-500 mb-2 font-semibold block">New Version Number</label>
                 <input 
                   type="text" 
                   value={saveVersion}
@@ -726,6 +776,19 @@ export function PromptEditor() {
                   placeholder="What changed in this version?"
                   rows={3}
                 />
+              </div>
+              
+              <div className="flex items-center gap-3 p-3 bg-slate-950 border border-slate-800 rounded">
+                <input 
+                  type="checkbox" 
+                  id="saveAsActive" 
+                  checked={saveAsActive}
+                  onChange={(e) => setSaveAsActive(e.target.checked)}
+                  className="w-4 h-4 text-teal-600 bg-slate-900 border-slate-700 rounded focus:ring-teal-500"
+                />
+                <label htmlFor="saveAsActive" className="text-sm text-slate-300 cursor-pointer">
+                  Make this version active (deploy immediately)
+                </label>
               </div>
             </div>
 
