@@ -196,13 +196,20 @@ export function PromptEditor() {
     };
 
     // Apply mappings to all detected variables
+    console.log('detectedVars:', detectedVars);
     detectedVars.forEach(v => {
       if (mappings[v]) {
         newInputs[v] = mappings[v];
+        console.log(`Setting newInputs[${v}] =`, mappings[v]?.substring(0, 100));
+      } else {
+        console.log(`No mapping for variable: ${v}`);
       }
     });
     
+    console.log('Final newInputs:', newInputs);
+    console.log('About to call setTestInputs');
     setTestInputs(newInputs);
+    console.log('setTestInputs called');
   };
 
   const loadPrompt = async () => {
@@ -726,6 +733,7 @@ export function PromptEditor() {
                 return availableVars.map((varInfo) => {
                   const variable = varInfo.name.replace(/\{\{|\}\}/g, '').trim();
                   console.log('Rendering field for variable:', variable);
+                  console.log(`testInputs[${variable}]:`, testInputs[variable]?.substring(0, 100));
                   return (
                 <div key={variable}>
                   <label className="text-[10px] text-slate-500 block font-mono mb-1 uppercase tracking-tighter">{variable}</label>
