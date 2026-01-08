@@ -97,31 +97,41 @@ export function ImageLab() {
             <h2 className="text-sm font-bold text-teal-400 uppercase mb-4">Input</h2>
             
             <div className="space-y-4">
-              {/* Load Brief */}
-              <div>
-                <label className="block text-xs font-medium text-slate-400 mb-2">Load Brief from Pattern</label>
-                <select
-                  onChange={(e) => handleLoadBrief(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-white text-sm focus:outline-none focus:border-teal-500"
-                >
-                  <option value="">Select a word...</option>
-                  {availableWords
-                    .filter(p => p.image_brief)
-                    .map(p => (
+              {/* Word & Load */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-slate-400 mb-2">Word</label>
+                  <input
+                    type="text"
+                    value={word}
+                    onChange={(e) => setWord(e.target.value)}
+                    placeholder="e.g. beginning"
+                    className="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-white text-sm focus:outline-none focus:border-teal-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-400 mb-2">Load from History</label>
+                  <select
+                    onChange={(e) => handleLoadBrief(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-white text-sm focus:outline-none focus:border-teal-500"
+                  >
+                    <option value="">Select a word...</option>
+                    {availableWords.map(p => (
                       <option key={p.id} value={p.word}>{p.word}</option>
                     ))}
-                </select>
+                  </select>
+                </div>
               </div>
 
-              {/* Essence (read-only) */}
+              {/* Essence */}
               <div>
-                <label className="block text-xs font-medium text-slate-400 mb-2">Essence (from pattern)</label>
+                <label className="block text-xs font-medium text-slate-400 mb-2">Essence</label>
                 <textarea
                   value={essence}
-                  readOnly
-                  placeholder="Select a word to load essence..."
+                  onChange={(e) => setEssence(e.target.value)}
+                  placeholder="Enter verbal essence..."
                   rows={4}
-                  className="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-slate-400 text-sm font-mono focus:outline-none resize-none"
+                  className="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-white text-sm font-mono focus:outline-none focus:border-teal-500 resize-none"
                 />
               </div>
 
