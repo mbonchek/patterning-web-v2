@@ -14,6 +14,7 @@ interface Prompt {
   top_p?: number;
   top_k?: number;
   max_tokens?: number;
+  created_at?: string;
 }
 
 interface Pattern {
