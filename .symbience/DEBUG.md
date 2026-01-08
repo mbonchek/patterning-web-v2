@@ -127,6 +127,14 @@ You have access to the entire codebase. Use it.
 - **Root cause:** Frontend expected nested structure, API returned flat structure
 - **Lesson:** Always check API response format before debugging frontend code
 
+### 2026-01-08: visual_layer not loading (field naming)
+- **Issue:** visual_layer not populating in word_visual_essence
+- **Mistake:** Initially thought mapping was correct because code looked right
+- **Should have:** Recognized that API was using obsolete field name `image_brief` instead of `visual_layer`
+- **Root cause:** API was returning visual_layer content as `image_brief` (V1 legacy naming)
+- **Fix:** Changed API to return `visual_layer` field, updated frontend mapping
+- **Lesson:** When V1→V2 migration happens, check for obsolete field names in API responses. The comment said "replaces brief in V2" but the field was still named `image_brief`.
+
 ---
 
-**Last updated:** 2026-01-08
+**Last updated:** 2026-01-08 (evening)
