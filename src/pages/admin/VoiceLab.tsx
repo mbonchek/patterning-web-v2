@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Mic2, Play, AlertCircle, CheckCircle, Loader2, ChevronRight, ChevronDown, RefreshCw, Globe, Clock } from 'lucide-react';
+import { Mic2, Play, AlertCircle, CheckCircle, Loader2, ChevronRight, ChevronDown, RefreshCw, Globe, Clock, Copy } from 'lucide-react';
 
 interface HttpTrace {
   timestamp: string;
@@ -25,31 +25,12 @@ interface HttpTrace {
   model?: string;
 }
 
-interface TraceData {
-  prompt: string;
-  response: string;
-  system?: string;
-  model?: string;
-  config?: {
-    temperature?: number;
-    max_tokens?: number;
-    top_p?: number;
-    top_k?: number;
-  };
-}
-
 interface LogEntry {
   word: string;
   status: 'pending' | 'processing' | 'success' | 'error';
   message: string;
   step?: string;
-  traces: {
-    layers?: TraceData;
-    voicing?: TraceData;
-    essence?: TraceData;
-    image_brief?: TraceData;
-    image?: TraceData;
-  };
+  data?: any;
   httpTraces: HttpTrace[];
 }
 
@@ -58,7 +39,6 @@ export function VoiceLab() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [selectedLog, setSelectedLog] = useState<LogEntry | null>(null);
-  const [expandedTraces, setExpandedTraces] = useState<Set<string>>(new Set());
   const [expandedHttpTraces, setExpandedHttpTraces] = useState<Set<number>>(new Set());
 
   const handleStart = async (force = true) => {
@@ -73,13 +53,13 @@ export function VoiceLab() {
     }
 
     setIsProcessing(true);
-    setLogs(words.map(w => ({ 
+    const initialLogs = words.map(w => ({ 
       word: w, 
       status: 'pending' as const, 
-      message: force ? 'Starting fresh...' : 'Resuming...', 
-      traces: {},
+      message: 'Waiting...', 
       httpTraces: []
-    })));
+    }));
+    setLogs(initialLogs);
 
     // Process sequentially
     for (let i = 0; i < words.length; i++) {
@@ -87,57 +67,24 @@ export function VoiceLab() {
       
       setLogs(prev => prev.map((log, idx) => 
         idx === i 
-          ? { ...log, status: 'processing' as const, message: force ? 'Regenerating...' : 'Checking existing data...' } 
+          ? { ...log, status: 'processing' as const, message: 'Starting generation...' } 
           : log
       ));
 
       try {
-        // Use V2 endpoint for generation
         const url = `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/word/${word}/generate`;
-        const startTime = Date.now();
-        
-        // Log the initial HTTP request
-        setLogs(prev => prev.map((log, idx) => {
-          if (idx !== i) return log;
-          return {
-            ...log,
-            httpTraces: [
-              ...log.httpTraces,
-              {
-                timestamp: new Date().toISOString(),
-                method: 'POST',
-                url: url,
-                requestHeaders: { 'Accept': 'text/event-stream' }
-              }
-            ]
-          };
-        }));
-
         const response = await fetch(url, {
           method: 'POST',
           headers: { 'Accept': 'text/event-stream' }
         });
 
-        // Log the response
-        const duration = Date.now() - startTime;
-        setLogs(prev => prev.map((log, idx) => {
-          if (idx !== i) return log;
-          const traces = [...log.httpTraces];
-          traces[traces.length - 1] = {
-            ...traces[traces.length - 1],
-            status: response.status,
-            duration: duration,
-            responseHeaders: Object.fromEntries(response.headers.entries())
-          };
-          return { ...log, httpTraces: traces };
-        }));
-
-        if (!response.ok) throw new Error('Network response was not ok');
+        if (!response.ok) throw new Error(`Server returned ${response.status}`);
         if (!response.body) throw new Error('No response body');
 
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
         let buffer = '';
+        let currentTrace: HttpTrace | null = null;
 
         while (true) {
           const { done, value } = await reader.read();
@@ -153,477 +100,192 @@ export function VoiceLab() {
             try {
               const data = JSON.parse(line.slice(6));
               
-              setLogs(prev => prev.map((log, idx) => {
-                if (idx !== i) return log;
-                
-                const updated = { ...log };
+              setLogs(prev => {
+                const newLogs = [...prev];
+                const log = { ...newLogs[i] };
                 
                 if (data.type === 'step') {
-                  updated.step = data.step;
-                  updated.message = data.message || `Processing ${data.step}...`;
+                  log.step = data.step;
+                  log.message = data.message;
+                } else if (data.type === 'http_trace') {
+                  const trace = data.http_trace;
+                  if (trace.method) {
+                    // Start of a new trace
+                    currentTrace = {
+                      ...trace,
+                      timestamp: new Date().toISOString()
+                    };
+                    log.httpTraces = [...log.httpTraces, currentTrace];
+                  } else if (currentTrace) {
+                    // Update existing trace (response)
+                    const lastIdx = log.httpTraces.length - 1;
+                    log.httpTraces[lastIdx] = {
+                      ...log.httpTraces[lastIdx],
+                      ...trace
+                    };
+                  }
+                } else if (data.type === 'success') {
+                  log.message = `Completed ${data.step}`;
+                } else if (data.type === 'complete') {
+                  log.status = 'success';
+                  log.message = 'Generation complete';
+                  log.data = data.data;
+                } else if (data.type === 'error') {
+                  log.status = 'error';
+                  log.message = data.message;
                 }
                 
-                if (data.type === 'trace' && data.trace) {
-                  updated.traces = {
-                    ...updated.traces,
-                    [data.step]: data.trace
-                  };
+                newLogs[i] = log;
+                // Update selected log if it's the one being processed
+                if (selectedLog?.word === log.word) {
+                  setSelectedLog(log);
                 }
-                
-                // Log HTTP traces from backend
-                if (data.type === 'http_trace' && data.http_trace) {
-                  updated.httpTraces = [
-                    ...updated.httpTraces,
-                    {
-                      ...data.http_trace,
-                      timestamp: data.http_trace.timestamp || new Date().toISOString()
-                    }
-                  ];
-                }
-                
-                if (data.type === 'complete') {
-                  updated.status = 'success';
-                  updated.message = 'Complete';
-                }
-                
-                if (data.type === 'error') {
-                  updated.status = 'error';
-                  updated.message = data.error || 'Error occurred';
-                }
-                
-                return updated;
-              }));
+                return newLogs;
+              });
             } catch (e) {
               console.error('Parse error:', e);
             }
           }
         }
-      } catch (error) {
-        console.error('Error processing word:', error);
-        setLogs(prev => prev.map((log, idx) => 
-          idx === i 
-            ? { 
-                ...log, 
-                status: 'error' as const, 
-                message: `Error: ${error}`,
-                httpTraces: [
-                  ...log.httpTraces,
-                  {
-                    timestamp: new Date().toISOString(),
-                    method: 'GET',
-                    url: `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/word/${log.word}/stream`,
-                    error: String(error)
-                  }
-                ]
-              } 
-            : log
-        ));
+      } catch (error: any) {
+        setLogs(prev => {
+          const newLogs = [...prev];
+          newLogs[i] = { 
+            ...newLogs[i], 
+            status: 'error', 
+            message: error.message 
+          };
+          return newLogs;
+        });
       }
     }
 
     setIsProcessing(false);
   };
 
-  const toggleTrace = (key: string) => {
-    setExpandedTraces(prev => {
-      const next = new Set(prev);
-      if (next.has(key)) {
-        next.delete(key);
-      } else {
-        next.add(key);
-      }
-      return next;
-    });
-  };
-
   const toggleHttpTrace = (index: number) => {
     setExpandedHttpTraces(prev => {
       const next = new Set(prev);
-      if (next.has(index)) {
-        next.delete(index);
-      } else {
-        next.add(index);
-      }
+      if (next.has(index)) next.delete(index);
+      else next.add(index);
       return next;
     });
-  };
-
-  const formatDuration = (ms?: number) => {
-    if (!ms) return 'N/A';
-    if (ms < 1000) return `${ms}ms`;
-    return `${(ms / 1000).toFixed(2)}s`;
   };
 
   const getStatusColor = (status?: number) => {
     if (!status) return 'text-slate-500';
     if (status >= 200 && status < 300) return 'text-green-400';
-    if (status >= 300 && status < 400) return 'text-blue-400';
-    if (status >= 400 && status < 500) return 'text-yellow-400';
     return 'text-red-400';
   };
 
   return (
     <div className="max-w-7xl mx-auto">
-      {/* Header */}
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
           <Mic2 className="text-teal-400" size={32} />
           <h1 className="text-3xl font-bold text-white">Voice Lab</h1>
         </div>
-        <p className="text-slate-400">
-          Test pattern generation with full trace visibility. Process words one at a time or in batch.
-        </p>
+        <p className="text-slate-400">Process words with full real-time HTTP trace visibility.</p>
       </div>
 
-      {/* Input Section */}
       <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-6 mb-6">
-        <label className="block text-sm font-medium text-slate-400 mb-2">
-          Words (one per line or comma-separated)
-        </label>
         <textarea
           value={inputWords}
           onChange={(e) => setInputWords(e.target.value)}
-          placeholder="petrichor&#10;serendipity&#10;ephemeral"
-          rows={5}
-          disabled={isProcessing}
-          className="w-full bg-slate-950 border border-slate-800 rounded px-4 py-3 text-white font-mono text-sm focus:outline-none focus:border-teal-500 resize-y disabled:opacity-50"
+          placeholder="Enter words to voice..."
+          rows={3}
+          className="w-full bg-slate-950 border border-slate-800 rounded px-4 py-3 text-white font-mono text-sm focus:border-teal-500 outline-none"
         />
-        
-        <div className="flex gap-3 mt-4">
-          <button
-            onClick={() => handleStart(true)}
-            disabled={isProcessing}
-            className="flex-1 bg-teal-600 hover:bg-teal-500 text-white px-6 py-3 rounded flex items-center justify-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isProcessing ? (
-              <>
-                <Loader2 className="animate-spin" size={18} />
-                Processing...
-              </>
-            ) : (
-              <>
-                <Play size={18} />
-                Force (Regenerate All)
-              </>
-            )}
-          </button>
-          
-          <button
-            onClick={() => handleStart(false)}
-            disabled={isProcessing}
-            className="flex-1 bg-slate-700 hover:bg-slate-600 text-white px-6 py-3 rounded flex items-center justify-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isProcessing ? (
-              <>
-                <Loader2 className="animate-spin" size={18} />
-                Processing...
-              </>
-            ) : (
-              <>
-                <RefreshCw size={18} />
-                Resume (Fill Missing)
-              </>
-            )}
-          </button>
-        </div>
+        <button
+          onClick={() => handleStart()}
+          disabled={isProcessing}
+          className="mt-4 w-full bg-teal-600 hover:bg-teal-500 text-white py-3 rounded font-bold flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+        >
+          {isProcessing ? <Loader2 className="animate-spin" size={18} /> : <Play size={18} />}
+          {isProcessing ? 'Voicing...' : 'Start Generation'}
+        </button>
       </div>
 
-      {/* Logs Section */}
       {logs.length > 0 && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Left: Log List */}
-          <div className="space-y-3">
-            <h2 className="text-lg font-bold text-white mb-4">Processing Log</h2>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-1 space-y-3">
+            <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider">Queue</h2>
             {logs.map((log, idx) => (
               <div
                 key={idx}
                 onClick={() => setSelectedLog(log)}
-                className={`bg-slate-900/50 border rounded-xl p-4 cursor-pointer transition-all ${
-                  selectedLog?.word === log.word
-                    ? 'border-teal-500 bg-teal-900/20'
-                    : 'border-slate-800 hover:border-slate-700'
+                className={`p-4 rounded-xl border cursor-pointer transition-all ${
+                  selectedLog?.word === log.word ? 'border-teal-500 bg-teal-900/20' : 'border-slate-800 bg-slate-900/30 hover:border-slate-700'
                 }`}
               >
-                <div className="flex items-center justify-between mb-2">
-                  <span className="font-bold text-white text-lg">{log.word}</span>
-                  {log.status === 'pending' && (
-                    <span className="text-slate-500 text-sm">Pending</span>
-                  )}
-                  {log.status === 'processing' && (
-                    <Loader2 className="text-teal-400 animate-spin" size={18} />
-                  )}
-                  {log.status === 'success' && (
-                    <CheckCircle className="text-green-400" size={18} />
-                  )}
-                  {log.status === 'error' && (
-                    <AlertCircle className="text-red-400" size={18} />
-                  )}
+                <div className="flex justify-between items-center mb-1">
+                  <span className="font-bold text-white">{log.word}</span>
+                  {log.status === 'processing' && <Loader2 className="text-teal-400 animate-spin" size={14} />}
+                  {log.status === 'success' && <CheckCircle className="text-green-400" size={14} />}
+                  {log.status === 'error' && <AlertCircle className="text-red-400" size={14} />}
                 </div>
-                <p className="text-sm text-slate-400">{log.message}</p>
-                {log.step && (
-                  <p className="text-xs text-teal-400 mt-1">Step: {log.step}</p>
-                )}
-                {log.httpTraces.length > 0 && (
-                  <p className="text-xs text-slate-500 mt-1">
-                    {log.httpTraces.length} HTTP {log.httpTraces.length === 1 ? 'request' : 'requests'}
-                  </p>
-                )}
+                <p className="text-xs text-slate-400 truncate">{log.message}</p>
               </div>
             ))}
           </div>
 
-          {/* Right: Detailed Traces */}
-          <div className="space-y-3">
-            <h2 className="text-lg font-bold text-white mb-4">Detailed Traces</h2>
+          <div className="lg:col-span-2 space-y-4">
+            <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider">Traces</h2>
             {selectedLog ? (
-              <div className="space-y-3">
-                {/* HTTP Traces Section */}
-                {selectedLog.httpTraces.length > 0 && (
-                  <div className="bg-slate-900/50 border border-slate-800 rounded-xl overflow-hidden">
-                    <div className="p-4 border-b border-slate-800 bg-slate-950/50">
-                      <div className="flex items-center gap-2">
-                        <Globe className="text-blue-400" size={18} />
-                        <h3 className="font-bold text-white">HTTP Trace Log</h3>
-                        <span className="text-xs text-slate-500 ml-auto">
-                          {selectedLog.httpTraces.length} {selectedLog.httpTraces.length === 1 ? 'request' : 'requests'}
+              <div className="space-y-4">
+                {selectedLog.httpTraces.map((trace, idx) => (
+                  <div key={idx} className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+                    <button
+                      onClick={() => toggleHttpTrace(idx)}
+                      className="w-full flex items-center justify-between p-4 hover:bg-slate-800/50 transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <Globe size={16} className="text-blue-400" />
+                        <span className="text-xs font-mono font-bold text-blue-400">{trace.method}</span>
+                        <span className={`text-xs font-mono font-bold ${getStatusColor(trace.status)}`}>
+                          {trace.status || 'PENDING'}
                         </span>
+                        <span className="text-[10px] text-slate-500 font-mono truncate max-w-[200px]">{trace.url}</span>
                       </div>
-                    </div>
-                    <div className="max-h-96 overflow-y-auto">
-                      {selectedLog.httpTraces.map((trace, idx) => {
-                        const isExpanded = expandedHttpTraces.has(idx);
-                        return (
-                          <div key={idx} className="border-b border-slate-800 last:border-b-0">
-                            <button
-                              onClick={() => toggleHttpTrace(idx)}
-                              className="w-full flex items-start gap-3 p-4 hover:bg-slate-800/30 transition-colors text-left"
-                            >
-                              <div className="flex-shrink-0 mt-0.5">
-                                {isExpanded ? (
-                                  <ChevronDown className="text-slate-400" size={16} />
-                                ) : (
-                                  <ChevronRight className="text-slate-400" size={16} />
-                                )}
-                              </div>
-                              <div className="flex-grow min-w-0">
-                                <div className="flex items-center gap-2 mb-1">
-                                  <span className="text-xs font-bold text-blue-400 font-mono">{trace.method}</span>
-                                  {trace.status && (
-                                    <span className={`text-xs font-bold font-mono ${getStatusColor(trace.status)}`}>
-                                      {trace.status}
-                                    </span>
-                                  )}
-                                  {trace.duration && (
-                                    <span className="text-xs text-slate-500 flex items-center gap-1">
-                                      <Clock size={12} />
-                                      {formatDuration(trace.duration)}
-                                    </span>
-                                  )}
-                                  {trace.tokens && (
-                                    <span className="text-xs text-purple-400 font-mono">
-                                      {trace.tokens.total.toLocaleString()} tokens
-                                    </span>
-                                  )}
-                                  {trace.cost && (
-                                    <span className="text-xs text-emerald-400 font-mono font-bold">
-                                      ${trace.cost.total.toFixed(4)}
-                                    </span>
-                                  )}
-                                  {trace.error && (
-                                    <span className="text-xs font-bold text-red-400">ERROR</span>
-                                  )}
-                                </div>
-                                <p className="text-xs text-slate-400 font-mono truncate">{trace.url}</p>
-                                <p className="text-xs text-slate-600 mt-0.5">
-                                  {new Date(trace.timestamp).toLocaleTimeString()}
-                                </p>
-                              </div>
-                            </button>
-                            
-                            {isExpanded && (
-                              <div className="p-4 bg-slate-950/50 space-y-3 text-xs">
-                                {trace.model && (
-                                  <div>
-                                    <p className="text-slate-500 mb-1 font-semibold">Model</p>
-                                    <p className="text-slate-300 font-mono">{trace.model}</p>
-                                  </div>
-                                )}
-                                
-                                {trace.tokens && (
-                                  <div>
-                                    <p className="text-slate-500 mb-1 font-semibold">Token Usage</p>
-                                    <div className="bg-slate-900 p-2 rounded space-y-1">
-                                      <div className="flex justify-between">
-                                        <span className="text-slate-400">Input:</span>
-                                        <span className="text-purple-400 font-mono">{trace.tokens.input.toLocaleString()}</span>
-                                      </div>
-                                      <div className="flex justify-between">
-                                        <span className="text-slate-400">Output:</span>
-                                        <span className="text-purple-400 font-mono">{trace.tokens.output.toLocaleString()}</span>
-                                      </div>
-                                      <div className="flex justify-between border-t border-slate-800 pt-1 mt-1">
-                                        <span className="text-slate-300 font-semibold">Total:</span>
-                                        <span className="text-purple-300 font-mono font-bold">{trace.tokens.total.toLocaleString()}</span>
-                                      </div>
-                                    </div>
-                                  </div>
-                                )}
-                                
-                                {trace.cost && (
-                                  <div>
-                                    <p className="text-slate-500 mb-1 font-semibold">Cost Breakdown</p>
-                                    <div className="bg-slate-900 p-2 rounded space-y-1">
-                                      <div className="flex justify-between">
-                                        <span className="text-slate-400">Input:</span>
-                                        <span className="text-emerald-400 font-mono">${trace.cost.input.toFixed(6)}</span>
-                                      </div>
-                                      <div className="flex justify-between">
-                                        <span className="text-slate-400">Output:</span>
-                                        <span className="text-emerald-400 font-mono">${trace.cost.output.toFixed(6)}</span>
-                                      </div>
-                                      <div className="flex justify-between border-t border-slate-800 pt-1 mt-1">
-                                        <span className="text-slate-300 font-semibold">Total:</span>
-                                        <span className="text-emerald-300 font-mono font-bold">${trace.cost.total.toFixed(6)}</span>
-                                      </div>
-                                    </div>
-                                  </div>
-                                )}
-                                
-                                {trace.requestHeaders && (
-                                  <div>
-                                    <p className="text-slate-500 mb-1 font-semibold">Request Headers</p>
-                                    <pre className="text-slate-300 font-mono bg-slate-900 p-2 rounded overflow-x-auto">
-                                      {JSON.stringify(trace.requestHeaders, null, 2)}
-                                    </pre>
-                                  </div>
-                                )}
-                                
-                                {trace.requestBody && (
-                                  <div>
-                                    <p className="text-slate-500 mb-1 font-semibold">Request Body</p>
-                                    <pre className="text-slate-300 font-mono bg-slate-900 p-2 rounded overflow-x-auto max-h-40 overflow-y-auto">
-                                      {typeof trace.requestBody === 'string' 
-                                        ? trace.requestBody 
-                                        : JSON.stringify(trace.requestBody, null, 2)}
-                                    </pre>
-                                  </div>
-                                )}
-                                
-                                {trace.responseHeaders && (
-                                  <div>
-                                    <p className="text-slate-500 mb-1 font-semibold">Response Headers</p>
-                                    <pre className="text-slate-300 font-mono bg-slate-900 p-2 rounded overflow-x-auto">
-                                      {JSON.stringify(trace.responseHeaders, null, 2)}
-                                    </pre>
-                                  </div>
-                                )}
-                                
-                                {trace.responseBody && (
-                                  <div>
-                                    <p className="text-slate-500 mb-1 font-semibold">Response Body</p>
-                                    <pre className="text-slate-300 font-mono bg-slate-900 p-2 rounded overflow-x-auto max-h-40 overflow-y-auto">
-                                      {typeof trace.responseBody === 'string' 
-                                        ? trace.responseBody 
-                                        : JSON.stringify(trace.responseBody, null, 2)}
-                                    </pre>
-                                  </div>
-                                )}
-                                
-                                {trace.error && (
-                                  <div>
-                                    <p className="text-red-500 mb-1 font-semibold">Error</p>
-                                    <pre className="text-red-300 font-mono bg-red-950/30 p-2 rounded overflow-x-auto">
-                                      {trace.error}
-                                    </pre>
-                                  </div>
-                                )}
-                              </div>
-                            )}
+                      {expandedHttpTraces.has(idx) ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                    </button>
+                    
+                    {expandedHttpTraces.has(idx) && (
+                      <div className="p-4 bg-black/40 border-t border-slate-800 space-y-4">
+                        {trace.requestBody && (
+                          <div>
+                            <p className="text-[10px] text-slate-500 uppercase font-bold mb-1">Request</p>
+                            <pre className="text-[11px] text-slate-300 bg-slate-950 p-3 rounded border border-slate-800 overflow-x-auto whitespace-pre-wrap">
+                              {JSON.stringify(trace.requestBody, null, 2)}
+                            </pre>
                           </div>
-                        );
-                      })}
-                    </div>
+                        )}
+                        {trace.responseBody && (
+                          <div>
+                            <p className="text-[10px] text-slate-500 uppercase font-bold mb-1">Response</p>
+                            <pre className="text-[11px] text-teal-400 bg-slate-950 p-3 rounded border border-slate-800 overflow-x-auto whitespace-pre-wrap">
+                              {JSON.stringify(trace.responseBody, null, 2)}
+                            </pre>
+                          </div>
+                        )}
+                        {trace.error && (
+                          <div className="p-3 bg-red-900/20 border border-red-900/50 rounded text-red-400 text-xs font-mono">
+                            {trace.error}
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
-                )}
-
-                {/* AI Traces Section */}
-                {Object.keys(selectedLog.traces).length > 0 && (
-                  <div className="space-y-3">
-                    {Object.entries(selectedLog.traces).map(([step, trace]) => {
-                      const key = `${selectedLog.word}-${step}`;
-                      const isExpanded = expandedTraces.has(key);
-                      
-                      return (
-                        <div key={step} className="bg-slate-900/50 border border-slate-800 rounded-xl overflow-hidden">
-                          <button
-                            onClick={() => toggleTrace(key)}
-                            className="w-full flex items-center justify-between p-4 hover:bg-slate-800/50 transition-colors"
-                          >
-                            <span className="font-bold text-white capitalize">{step}</span>
-                            {isExpanded ? (
-                              <ChevronDown className="text-slate-400" size={18} />
-                            ) : (
-                              <ChevronRight className="text-slate-400" size={18} />
-                            )}
-                          </button>
-                          
-                          {isExpanded && (
-                            <div className="p-4 border-t border-slate-800 space-y-4">
-                              {trace.model && (
-                                <div>
-                                  <p className="text-xs text-slate-500 mb-1">Model</p>
-                                  <p className="text-sm text-slate-300 font-mono">{trace.model}</p>
-                                </div>
-                              )}
-                              
-                              {trace.system && (
-                                <div>
-                                  <p className="text-xs text-slate-500 mb-1">System Prompt</p>
-                                  <pre className="text-xs text-slate-300 font-mono bg-slate-950 p-3 rounded overflow-x-auto whitespace-pre-wrap max-h-40 overflow-y-auto">
-                                    {trace.system}
-                                  </pre>
-                                </div>
-                              )}
-                              
-                              <div>
-                                <p className="text-xs text-slate-500 mb-1">User Prompt</p>
-                                <pre className="text-xs text-slate-300 font-mono bg-slate-950 p-3 rounded overflow-x-auto whitespace-pre-wrap max-h-40 overflow-y-auto">
-                                  {trace.prompt}
-                                </pre>
-                              </div>
-                              
-                              <div>
-                                <p className="text-xs text-slate-500 mb-1">Response</p>
-                                <pre className="text-xs text-slate-300 font-mono bg-slate-950 p-3 rounded overflow-x-auto whitespace-pre-wrap max-h-60 overflow-y-auto">
-                                  {trace.response}
-                                </pre>
-                              </div>
-                              
-                              {trace.config && (
-                                <div>
-                                  <p className="text-xs text-slate-500 mb-1">Config</p>
-                                  <pre className="text-xs text-slate-300 font-mono bg-slate-950 p-3 rounded overflow-x-auto">
-                                    {JSON.stringify(trace.config, null, 2)}
-                                  </pre>
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-
-                {selectedLog.httpTraces.length === 0 && Object.keys(selectedLog.traces).length === 0 && (
-                  <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-8 text-center">
-                    <p className="text-slate-500">No trace data available yet</p>
+                ))}
+                {selectedLog.httpTraces.length === 0 && (
+                  <div className="text-center py-12 text-slate-600 italic border border-slate-800 border-dashed rounded-xl">
+                    No traces available for this word yet.
                   </div>
                 )}
               </div>
             ) : (
-              <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-8 text-center">
-                <p className="text-slate-500">Select a log entry to view traces</p>
+              <div className="text-center py-20 text-slate-600 italic border border-slate-800 border-dashed rounded-xl">
+                Select a word from the queue to view its generation DNA.
               </div>
             )}
           </div>
