@@ -76,7 +76,7 @@ export function Library() {
     setInspectorData({ type, content, word });
   };
 
-  const handleAction = async (action: 'delete_all' | 'clear_layers' | 'clear_voicing' | 'clear_essence' | 'clear_brief' | 'clear_image') => {
+  const handleAction = async (action: 'delete_all' | 'clear_layers' | 'clear_voicing' | 'clear_essence' | 'clear_visual_layer' | 'clear_image') => {
     if (!selectedPattern) return;
     if (!confirm('Are you sure? This cannot be undone.')) return;
 
