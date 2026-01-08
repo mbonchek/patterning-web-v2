@@ -74,7 +74,7 @@ export function Library() {
   };
 
   const handleOpenPattern = (pattern: Pattern) => {
-    navigate(`/pattern/${pattern.id}`, { state: { pattern } });
+    navigate(`/${pattern.word}`);
   };
 
   const handleAction = async (action: 'delete_all' | 'clear_layers' | 'clear_voicing' | 'clear_essence' | 'clear_visual_layer' | 'clear_image') => {
@@ -160,7 +160,8 @@ export function Library() {
           {filteredPatterns.map((pattern) => (
             <div 
               key={pattern.id} 
-              className="group bg-slate-900/50 border border-slate-800 hover:border-teal-500/50 rounded-xl overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-teal-900/10 flex flex-col relative"
+              onClick={() => handleOpenPattern(pattern)}
+              className="group bg-slate-900/50 border border-slate-800 hover:border-teal-500/50 rounded-xl overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-teal-900/10 flex flex-col relative cursor-pointer"
             >
               {/* Manage Button */}
               <button 
