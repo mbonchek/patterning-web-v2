@@ -131,9 +131,9 @@ export function PromptEditor() {
   // Initialize input fields for all available variables (not just ones in template)
   useEffect(() => {
     if (!prompt) return;
-    const availableVarNames = availableVars.map(v => v.name.replace(/\{\{|\}\}/g, '').trim());
+    const vars = getAvailableVariables(prompt.slug);
+    const availableVarNames = vars.map(v => v.name.replace(/\{\{|\}\}/g, '').trim());
     console.log('Available variables for', prompt.slug, ':', availableVarNames);
-    console.log('Available vars object:', availableVars);
     setTestInputs(prev => {
       const next = { ...prev };
       availableVarNames.forEach(v => {
@@ -142,7 +142,7 @@ export function PromptEditor() {
       console.log('Test inputs after initialization:', next);
       return next;
     });
-  }, [prompt, availableVars]);
+  }, [prompt?.slug]);
 
   const loadRecentPatterns = async (query = '') => {
     setIsSearching(!!query);
