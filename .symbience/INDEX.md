@@ -34,6 +34,7 @@ This directory contains working protocols for human-AI collaboration on the Patt
 - `SYMBIENCE ARCH` → Go directly to ARCHITECTURE.md
 - `SYMBIENCE REVIEW` → Go directly to REVIEW.md
 - `SYMBIENCE REMEMBER [topic]` → Update protocol(s) with new learning
+- `SYMBIENCE UPDATE` → Review working memory and batch-update all relevant protocols
 
 ---
 
@@ -94,5 +95,16 @@ When triggered, I will:
 2. Add the information in the appropriate section
 3. Commit the change to the repo
 4. Confirm what was added
+
+### Batch Updates with SYMBIENCE UPDATE
+
+Use `SYMBIENCE UPDATE` at the end of a session to:
+1. Review everything in working memory (context, lessons learned, decisions made)
+2. Identify what should be preserved for future sessions
+3. Update all relevant protocol files (DEBUG, DEPLOY, ARCH, MEMORY, REVIEW)
+4. Commit all changes together
+5. Provide summary of what was updated
+
+This ensures important learnings don't get lost between sessions.
 
 **Last updated:** 2026-01-08

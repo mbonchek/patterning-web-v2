@@ -44,6 +44,7 @@ When the user says **`SYMBIENCE`** or **`SYMBIENCE [COMMAND]`**, you should:
 | `SYMBIENCE ARCH` | Review architecture principles | ARCHITECTURE.md |
 | `SYMBIENCE REVIEW` | Apply code review standards | REVIEW.md |
 | `SYMBIENCE REMEMBER [topic]` | Update protocol(s) with new learning | Determine which file(s) |
+| `SYMBIENCE UPDATE` | Review working memory and batch-update protocols | Multiple files |
 
 ### 3. When to Use Each Protocol
 
@@ -77,6 +78,13 @@ When the user says **`SYMBIENCE`** or **`SYMBIENCE [COMMAND]`**, you should:
 - Add the information in appropriate section
 - Commit the change
 - Confirm what was added
+
+**UPDATE** - End of session batch update
+- Review everything in working memory
+- Identify what should be preserved
+- Update all relevant protocol files
+- Commit all changes together
+- Provide summary of updates
 
 ---
 
@@ -133,6 +141,27 @@ When the user says **`SYMBIENCE`** or **`SYMBIENCE [COMMAND]`**, you should:
 3. Add the new learning in the appropriate section
 4. Commit the change
 5. Confirm: "Added to DEPLOY.md: Always check Railway logs after deployment"
+
+### Scenario 5: End of Session Batch Update
+
+**User says:** "SYMBIENCE UPDATE"
+
+**You should:**
+1. Review everything in your working memory:
+   - What bugs were fixed and how
+   - What patterns were discovered
+   - What user preferences emerged
+   - What architectural decisions were made
+   - What code patterns were established
+2. Identify what should be preserved:
+   - New debugging lessons → DEBUG.md
+   - Deployment insights → DEPLOY.md
+   - User preferences → WORKING-MEMORY.md
+   - Architecture changes → ARCHITECTURE.md
+   - Code standards → REVIEW.md
+3. Update all relevant files
+4. Commit all changes in one commit
+5. Provide summary: "Updated 3 protocols: DEBUG (2 lessons), MEMORY (1 preference), ARCH (1 decision)"
 
 ---
 
