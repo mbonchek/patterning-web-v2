@@ -302,7 +302,13 @@ export function PromptEditor() {
       setSaveVersion(suggestedVersion);
       setSaveComment('');
       setSaveAsActive(true); // Default to making it active
-      setLatestVersion(sameSlug.length > 0 ? versions[0] : null); // Store latest version for display
+      // Store latest version for display (already calculated above)
+      if (sameSlug.length > 0) {
+        const versions = sameSlug.map((p: Prompt) => p.version).sort((a: number, b: number) => b - a);
+        setLatestVersion(versions[0]);
+      } else {
+        setLatestVersion(null);
+      }
       setShowSaveDialog(true);
     } catch (error: any) {
       alert('Error preparing save: ' + error.message);
