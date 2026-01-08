@@ -713,9 +713,12 @@ export function PromptEditor() {
 
             {/* Variable Inputs */}
             <div className="grid grid-cols-1 gap-3 mb-4 max-h-48 overflow-y-auto pr-2">
-              {availableVars.map((varInfo) => {
-                const variable = varInfo.name.replace(/\{\{|\}\}/g, '').trim();
-                return (
+              {(() => {
+                console.log('Rendering input fields, availableVars:', availableVars);
+                return availableVars.map((varInfo) => {
+                  const variable = varInfo.name.replace(/\{\{|\}\}/g, '').trim();
+                  console.log('Rendering field for variable:', variable);
+                  return (
                 <div key={variable}>
                   <label className="text-[10px] text-slate-500 block font-mono mb-1 uppercase tracking-tighter">{variable}</label>
                   <textarea 
@@ -725,8 +728,9 @@ export function PromptEditor() {
                     placeholder={`Value for ${variable}`}
                   />
                 </div>
-              );
-              })}
+                  );
+                });
+              })()}
             </div>
 
             {/* Output Area */}
