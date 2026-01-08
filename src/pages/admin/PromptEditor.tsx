@@ -126,15 +126,20 @@ export function PromptEditor() {
     const vars = matches.map(m => m.replace(/\{\{|\}\}/g, '').trim());
     const uniqueVars = Array.from(new Set(vars));
     setDetectedVars(uniqueVars);
-    
+  }, [template]);
+
+  // Initialize input fields for all available variables (not just ones in template)
+  useEffect(() => {
+    if (!prompt) return;
+    const availableVarNames = availableVars.map(v => v.name.replace(/\{\{|\}\}/g, '').trim());
     setTestInputs(prev => {
       const next = { ...prev };
-      uniqueVars.forEach(v => {
+      availableVarNames.forEach(v => {
         if (next[v] === undefined) next[v] = '';
       });
       return next;
     });
-  }, [template]);
+  }, [prompt, availableVars]);
 
   const loadRecentPatterns = async (query = '') => {
     setIsSearching(!!query);
@@ -705,7 +710,9 @@ export function PromptEditor() {
 
             {/* Variable Inputs */}
             <div className="grid grid-cols-1 gap-3 mb-4 max-h-48 overflow-y-auto pr-2">
-              {detectedVars.map((variable) => (
+              {availableVars.map((varInfo) => {
+                const variable = varInfo.name.replace(/\{\{|\}\}/g, '').trim();
+                return (
                 <div key={variable}>
                   <label className="text-[10px] text-slate-500 block font-mono mb-1 uppercase tracking-tighter">{variable}</label>
                   <textarea 
@@ -715,7 +722,8 @@ export function PromptEditor() {
                     placeholder={`Value for ${variable}`}
                   />
                 </div>
-              ))}
+              );
+              })}
             </div>
 
             {/* Output Area */}
