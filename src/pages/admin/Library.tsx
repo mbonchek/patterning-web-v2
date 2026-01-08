@@ -46,6 +46,10 @@ export function Library() {
   const [inspectorOpen, setInspectorOpen] = useState(false);
   const [inspectorData, setInspectorData] = useState<any>(null);
 
+  // Image Modal State
+  const [imageModalOpen, setImageModalOpen] = useState(false);
+  const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
+
   useEffect(() => {
     fetchHistory();
   }, []);
@@ -80,6 +84,12 @@ export function Library() {
 
   const handleOpenPattern = (pattern: Pattern) => {
     navigate(`/${pattern.word}`);
+  };
+
+  const handleOpenImage = (imageUrl: string | null) => {
+    if (!imageUrl) return;
+    setSelectedImageUrl(imageUrl);
+    setImageModalOpen(true);
   };
 
   const handleAction = async (action: 'delete_all' | 'clear_layers' | 'clear_voicing' | 'clear_essence' | 'clear_visual_layer' | 'clear_image') => {
@@ -273,11 +283,11 @@ export function Library() {
                         <Sparkle size={14} />
                       </button>
                       <button
-                        onClick={(e) => { e.stopPropagation(); handleOpenPattern(pattern); }}
+                        onClick={(e) => { e.stopPropagation(); handleOpenImage(pattern.image_url); }}
                         className={`flex items-center justify-center p-2 rounded border transition-all ${
                           pattern.image_url ? 'bg-green-500/10 text-green-400 border-green-500/30 hover:bg-green-500/20' : 'bg-slate-800/30 text-slate-600 border-slate-700/30'
                         }`}
-                        title="View Pattern"
+                        title="View Image"
                         disabled={!pattern.image_url}
                       >
                         <Eye size={14} />
@@ -344,6 +354,27 @@ export function Library() {
               </pre>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Fullscreen Image Modal */}
+      {imageModalOpen && selectedImageUrl && (
+        <div 
+          className="fixed inset-0 bg-black/95 flex items-center justify-center z-50 p-4"
+          onClick={() => setImageModalOpen(false)}
+        >
+          <button
+            className="absolute top-6 right-6 p-3 bg-white/10 hover:bg-white/20 rounded-lg text-white transition-all z-10"
+            onClick={() => setImageModalOpen(false)}
+          >
+            <X size={24} />
+          </button>
+          <img
+            src={selectedImageUrl}
+            alt="Pattern"
+            className="max-w-full max-h-full object-contain"
+            onClick={(e) => e.stopPropagation()}
+          />
         </div>
       )}
 

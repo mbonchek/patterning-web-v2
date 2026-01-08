@@ -39,16 +39,24 @@ export default function PatternDetail() {
         const data = await response.json();
         console.log('Pattern data received:', data);
         
-        // Handle both old and new API formats
+        // The API returns an array of patterns, get the most recent one
+        const patterns = data.patterns || [];
+        if (patterns.length === 0) {
+          throw new Error('No patterns found for this word');
+        }
+        
+        const latestPattern = patterns[0]; // Already sorted by created_at desc
+        
+        // Transform the nested structure to flat pattern
         const transformedPattern: Pattern = {
-          word: data.word || word,
-          image_url: data.image_url,
-          verbal_essence: data.verbal_essence || data.essence, // fallback to old field
-          visual_essence: data.visual_essence || data.brief, // fallback to old field
-          verbal_layer: data.verbal_layer || data.layers, // fallback to old field
-          verbal_voicing: data.verbal_voicing || data.voicing, // fallback to old field
-          visual_layer: data.visual_layer,
-          created_at: data.created_at
+          word: latestPattern.word_seeds?.text || word,
+          image_url: latestPattern.word_visual_image?.image_url,
+          verbal_essence: latestPattern.word_verbal_essence?.content,
+          visual_essence: latestPattern.word_visual_essence?.content,
+          verbal_layer: latestPattern.word_verbal_layer?.content,
+          verbal_voicing: latestPattern.word_verbal_voicing?.content,
+          visual_layer: latestPattern.word_visual_layer?.content,
+          created_at: latestPattern.created_at
         };
         
         setPattern(transformedPattern);
