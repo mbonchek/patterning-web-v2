@@ -5,10 +5,11 @@ import { ArrowLeft, Save, Play, Check, AlertCircle, Copy, Settings, Search, Diff
 interface Prompt {
   id: string;
   slug: string;
-  version: string; // Changed to string for semantic versioning
+  version: number; // NUMERIC(8,2) - semantic versioning like 1.0, 2.1, 3.0
   template: string;
   is_active: boolean;
   description: string | null;
+  comment: string | null; // Version control commit message
   input_variables: string[];
   temperature?: number;
   top_p?: number;
@@ -155,10 +156,11 @@ export function PromptEditor() {
       setPrompt({
         id: 'new',
         slug: 'new-prompt',
-        version: '1.0',
+        version: 1.0,
         template: '',
         is_active: false,
         description: '',
+        comment: null,
         input_variables: ['word']
       });
       return;
@@ -203,9 +205,7 @@ export function PromptEditor() {
           .filter((p: Prompt) => p.slug === data.slug)
           .sort((a: Prompt, b: Prompt) => {
             // Sort by version descending (most recent first)
-            const versionA = a.version.toString();
-            const versionB = b.version.toString();
-            return versionB.localeCompare(versionA, undefined, { numeric: true, sensitivity: 'base' });
+            return b.version - a.version;
           });
         setVersionHistory(history);
       }
@@ -225,17 +225,42 @@ export function PromptEditor() {
       const allPrompts = await res.json();
       const sameSlug = allPrompts.filter((p: Prompt) => p.slug === prompt.slug);
       
-      // Suggest next version based on current versions
+      // Calculate diff percentage to suggest version bump
       let suggestedVersion = '1.0';
+      let isMajorChange = false;
+      
       if (sameSlug.length > 0) {
-        const versions = sameSlug.map((p: Prompt) => p.version).sort();
-        const latestVersion = versions[versions.length - 1];
+        // Sort versions numerically
+        const versions = sameSlug.map((p: Prompt) => p.version).sort((a, b) => b - a);
+        const latestVersion = versions[0];
+        const latestPrompt = sameSlug.find((p: Prompt) => p.version === latestVersion);
         
-        // Parse semantic version and suggest next minor version
-        const match = latestVersion.match(/^(\d+)\.(\d+)/);
-        if (match) {
-          const major = parseInt(match[1]);
-          const minor = parseInt(match[2]);
+        // Calculate diff percentage
+        if (latestPrompt && latestPrompt.template) {
+          const oldTemplate = latestPrompt.template;
+          const newTemplate = template;
+          
+          // Simple character-level diff
+          const maxLen = Math.max(oldTemplate.length, newTemplate.length);
+          let diffChars = 0;
+          for (let i = 0; i < maxLen; i++) {
+            if (oldTemplate[i] !== newTemplate[i]) diffChars++;
+          }
+          const diffPercent = (diffChars / maxLen) * 100;
+          
+          // Major change if >= 20% different
+          isMajorChange = diffPercent >= 20;
+        }
+        
+        // Suggest version based on change size
+        const major = Math.floor(latestVersion);
+        const minor = Math.round((latestVersion - major) * 10);
+        
+        if (isMajorChange) {
+          // Major version bump (e.g., 2.1 → 3.0)
+          suggestedVersion = `${major + 1}.0`;
+        } else {
+          // Minor version bump (e.g., 2.1 → 2.2)
           suggestedVersion = `${major}.${minor + 1}`;
         }
       }
@@ -254,6 +279,13 @@ export function PromptEditor() {
       return;
     }
     
+    // Validate version is a valid number
+    const versionNum = parseFloat(saveVersion.trim());
+    if (isNaN(versionNum)) {
+      alert('Version must be a valid number (e.g., 1.0, 2.1, 3.0)');
+      return;
+    }
+    
     setSaving(true);
     setShowSaveDialog(false);
 
@@ -263,9 +295,10 @@ export function PromptEditor() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           slug: prompt.slug,
-          version: saveVersion.trim(),
+          version: versionNum,
           template: template,
-          description: saveComment.trim() || description,
+          description: description,
+          comment: saveComment.trim() || null,
           input_variables: detectedVars,
           is_active: false,
           temperature: config.temperature,
@@ -650,8 +683,8 @@ export function PromptEditor() {
                         {v.created_at ? new Date(v.created_at).toLocaleDateString() : 'Unknown date'}
                       </span>
                     </div>
-                    {v.description && (
-                      <p className="text-sm text-slate-400 line-clamp-2">{v.description}</p>
+                    {v.comment && (
+                      <p className="text-sm text-slate-400 line-clamp-2">{v.comment}</p>
                     )}
                   </div>
                 ))
