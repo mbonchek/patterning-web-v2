@@ -165,6 +165,14 @@ export function PromptEditor() {
   const handleLoadTestData = (pattern: any) => {
     if (!pattern) return;
     
+    console.log('=== PATTERN LOADING DEBUG ===');
+    console.log('Full pattern object:', JSON.stringify(pattern, null, 2));
+    console.log('pattern.word:', pattern.word);
+    console.log('pattern.visual_layer:', pattern.visual_layer);
+    console.log('pattern.layers:', pattern.layers);
+    console.log('pattern.image_brief:', pattern.image_brief);
+    console.log('All pattern keys:', Object.keys(pattern));
+    
     const newInputs = { ...testInputs };
     
     // Intelligent mapping based on V2 schema and common variable names
