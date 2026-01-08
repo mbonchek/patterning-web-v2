@@ -5,7 +5,7 @@ import { ArrowLeft, Save, Play, Check, AlertCircle, Copy, Settings, Search, Diff
 interface Prompt {
   id: string;
   slug: string;
-  version: number;
+  version: string; // Changed to string for semantic versioning
   template: string;
   is_active: boolean;
   description: string | null;
@@ -66,6 +66,11 @@ export function PromptEditor() {
   const [isSearching, setIsSearching] = useState(false);
   const [testError, setTestError] = useState<string | null>(null);
   const [detectedVars, setDetectedVars] = useState<string[]>([]);
+
+  // Save Dialog State
+  const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const [saveVersion, setSaveVersion] = useState('');
+  const [saveComment, setSaveComment] = useState('');
 
   useEffect(() => {
     loadPrompt();
@@ -145,7 +150,7 @@ export function PromptEditor() {
       setPrompt({
         id: 'new',
         slug: 'new-prompt',
-        version: 1,
+        version: '1.0',
         template: '',
         is_active: false,
         description: '',
@@ -197,22 +202,54 @@ export function PromptEditor() {
 
   const handleSave = async () => {
     if (!prompt) return;
-    setSaving(true);
-
+    
+    // Get all prompts to suggest next version
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/admin/prompts`);
       const allPrompts = await res.json();
       const sameSlug = allPrompts.filter((p: Prompt) => p.slug === prompt.slug);
-      const newVersion = sameSlug.length > 0 ? Math.max(...sameSlug.map((p: Prompt) => p.version)) + 1 : 1;
+      
+      // Suggest next version based on current versions
+      let suggestedVersion = '1.0';
+      if (sameSlug.length > 0) {
+        const versions = sameSlug.map((p: Prompt) => p.version).sort();
+        const latestVersion = versions[versions.length - 1];
+        
+        // Parse semantic version and suggest next minor version
+        const match = latestVersion.match(/^(\d+)\.(\d+)/);
+        if (match) {
+          const major = parseInt(match[1]);
+          const minor = parseInt(match[2]);
+          suggestedVersion = `${major}.${minor + 1}`;
+        }
+      }
+      
+      setSaveVersion(suggestedVersion);
+      setSaveComment('');
+      setShowSaveDialog(true);
+    } catch (error: any) {
+      alert('Error preparing save: ' + error.message);
+    }
+  };
 
+  const handleConfirmSave = async () => {
+    if (!prompt || !saveVersion.trim()) {
+      alert('Version number is required');
+      return;
+    }
+    
+    setSaving(true);
+    setShowSaveDialog(false);
+
+    try {
       const saveRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/admin/prompts`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           slug: prompt.slug,
-          version: newVersion,
+          version: saveVersion.trim(),
           template: template,
-          description: description,
+          description: saveComment.trim() || description,
           input_variables: detectedVars,
           is_active: false,
           temperature: config.temperature,
@@ -226,7 +263,8 @@ export function PromptEditor() {
         const newPrompt = await saveRes.json();
         navigate(`/admin/prompts/${newPrompt.id}`);
       } else {
-        alert('Error saving prompt: ' + await saveRes.text());
+        const errorText = await saveRes.text();
+        alert('Error saving prompt: ' + errorText);
       }
     } catch (error: any) {
       alert('Error saving prompt: ' + error.message);
@@ -492,6 +530,59 @@ export function PromptEditor() {
         </div>
 
       </div>
+
+      {/* Save Dialog Modal */}
+      {showSaveDialog && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-xl max-w-md w-full p-6">
+            <h2 className="text-xl font-bold text-white mb-4">Save New Version</h2>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="text-xs uppercase tracking-widest text-slate-500 mb-2 font-semibold block">Version Number</label>
+                <input 
+                  type="text" 
+                  value={saveVersion}
+                  onChange={(e) => setSaveVersion(e.target.value)}
+                  className="w-full bg-slate-950 text-slate-300 text-sm p-3 rounded border border-slate-800 focus:border-teal-500 outline-none font-mono"
+                  placeholder="e.g., 2.1, 3.0, 1.5"
+                  autoFocus
+                />
+                <p className="text-xs text-slate-600 mt-1">Use semantic versioning (e.g., 1.0, 2.1, 3.0)</p>
+              </div>
+              
+              <div>
+                <label className="text-xs uppercase tracking-widest text-slate-500 mb-2 font-semibold block">Commit Message</label>
+                <textarea 
+                  value={saveComment}
+                  onChange={(e) => setSaveComment(e.target.value)}
+                  className="w-full bg-slate-950 text-slate-300 text-sm p-3 rounded border border-slate-800 focus:border-teal-500 outline-none resize-none"
+                  placeholder="What changed in this version?"
+                  rows={3}
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => setShowSaveDialog(false)}
+                className="flex-1 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmSave}
+                disabled={!saveVersion.trim()}
+                className="flex-1 px-4 py-2 bg-teal-600 hover:bg-teal-500 text-white rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                <Save size={16} />
+                Save Version
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
