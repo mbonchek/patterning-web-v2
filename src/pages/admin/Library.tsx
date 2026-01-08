@@ -9,7 +9,12 @@ import {
   Trash2,
   X,
   Loader2,
-  Eye
+  Eye,
+  Layers,
+  Sparkles,
+  Mic,
+  Layout,
+  Zap
 } from 'lucide-react';
 
 interface Pattern {
@@ -204,83 +209,81 @@ export function Library() {
               <div className="p-4 flex-grow flex flex-col">
                 <h3 className="text-lg font-bold text-white capitalize font-serif tracking-wide mb-4">{pattern.word}</h3>
                 
-                {/* New Grid Layout */}
-                <div className="grid grid-cols-2 gap-3 text-xs mb-4">
-                  {/* Top Row: Verbal Layer (Left) | Visual Layers (Right) */}
-                  <button
-                    onClick={(e) => { e.stopPropagation(); handleInspect(pattern.verbal_layer, 'Verbal Layer', pattern.word); }}
-                    className={`flex items-center justify-center px-2 py-2.5 rounded border transition-all ${
-                      pattern.verbal_layer 
-                        ? 'bg-blue-500/10 text-blue-400 border-blue-500/30 hover:bg-blue-500/20' 
-                        : 'bg-slate-800/30 text-slate-600 border-slate-700/30'
-                    }`}
-                    disabled={!pattern.verbal_layer}
-                  >
-                    <span className="font-bold text-[10px] uppercase tracking-tight">Verbal Layer</span>
-                  </button>
+                {/* Icon-based Rows */}
+                <div className="space-y-3 mb-4">
+                  {/* VERBAL Row */}
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-bold text-blue-500 uppercase tracking-wider w-14">Verbal</span>
+                    <div className="flex-grow grid grid-cols-3 gap-2">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleInspect(pattern.verbal_layer, 'Verbal Layers', pattern.word); }}
+                        className={`flex items-center justify-center p-2 rounded border transition-all ${
+                          pattern.verbal_layer ? 'bg-blue-500/10 text-blue-400 border-blue-500/30 hover:bg-blue-500/20' : 'bg-slate-800/30 text-slate-600 border-slate-700/30'
+                        }`}
+                        title="Verbal Layers"
+                        disabled={!pattern.verbal_layer}
+                      >
+                        <Layers size={14} />
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleInspect(pattern.verbal_essence, 'Verbal Essence', pattern.word); }}
+                        className={`flex items-center justify-center p-2 rounded border transition-all ${
+                          pattern.verbal_essence ? 'bg-blue-500/10 text-blue-400 border-blue-500/30 hover:bg-blue-500/20' : 'bg-slate-800/30 text-slate-600 border-slate-700/30'
+                        }`}
+                        title="Verbal Essence"
+                        disabled={!pattern.verbal_essence}
+                      >
+                        <Sparkles size={14} />
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleInspect(pattern.verbal_voicing, 'Voicing', pattern.word); }}
+                        className={`flex items-center justify-center p-2 rounded border transition-all ${
+                          pattern.verbal_voicing ? 'bg-blue-500/10 text-blue-400 border-blue-500/30 hover:bg-blue-500/20' : 'bg-slate-800/30 text-slate-600 border-slate-700/30'
+                        }`}
+                        title="Voicing"
+                        disabled={!pattern.verbal_voicing}
+                      >
+                        <Mic size={14} />
+                      </button>
+                    </div>
+                  </div>
 
-                  <button
-                    onClick={(e) => { e.stopPropagation(); handleInspect(pattern.visual_layer, 'Visual Layer', pattern.word); }}
-                    className={`flex items-center justify-center px-2 py-2.5 rounded border transition-all ${
-                      pattern.visual_layer 
-                        ? 'bg-green-500/10 text-green-400 border-green-500/30 hover:bg-green-500/20' 
-                        : 'bg-slate-800/30 text-slate-600 border-slate-700/30'
-                    }`}
-                    disabled={!pattern.visual_layer}
-                  >
-                    <span className="font-bold text-[10px] uppercase tracking-tight">Visual Layers</span>
-                  </button>
-
-                  {/* Middle Row: Verbal Essence (Left) | Visual Essence (Right) */}
-                  <button
-                    onClick={(e) => { e.stopPropagation(); handleInspect(pattern.verbal_essence, 'Verbal Essence', pattern.word); }}
-                    className={`flex items-center justify-center px-2 py-2.5 rounded border transition-all ${
-                      pattern.verbal_essence 
-                        ? 'bg-blue-500/10 text-blue-400 border-blue-500/30 hover:bg-blue-500/20' 
-                        : 'bg-slate-800/30 text-slate-600 border-slate-700/30'
-                    }`}
-                    disabled={!pattern.verbal_essence}
-                  >
-                    <span className="font-bold text-[10px] uppercase tracking-tight">Verbal Essence</span>
-                  </button>
-
-                  <button
-                    onClick={(e) => { e.stopPropagation(); handleInspect(pattern.visual_essence, 'Visual Essence', pattern.word); }}
-                    className={`flex items-center justify-center px-2 py-2.5 rounded border transition-all ${
-                      pattern.visual_essence 
-                        ? 'bg-green-500/10 text-green-400 border-green-500/30 hover:bg-green-500/20' 
-                        : 'bg-slate-800/30 text-slate-600 border-slate-700/30'
-                    }`}
-                    disabled={!pattern.visual_essence}
-                  >
-                    <span className="font-bold text-[10px] uppercase tracking-tight">Visual Essence</span>
-                  </button>
-
-                  {/* Bottom Row: Voicing (Left) | Image (Right) */}
-                  <button
-                    onClick={(e) => { e.stopPropagation(); handleInspect(pattern.verbal_voicing, 'Voicing', pattern.word); }}
-                    className={`flex items-center justify-center px-2 py-2.5 rounded border transition-all ${
-                      pattern.verbal_voicing 
-                        ? 'bg-blue-500/10 text-blue-400 border-blue-500/30 hover:bg-blue-500/20' 
-                        : 'bg-slate-800/30 text-slate-600 border-slate-700/30'
-                    }`}
-                    disabled={!pattern.verbal_voicing}
-                  >
-                    <span className="font-bold text-[10px] uppercase tracking-tight">Voicing</span>
-                  </button>
-
-                  <button
-                    onClick={(e) => { e.stopPropagation(); handleOpenPattern(pattern); }}
-                    className={`flex items-center justify-center gap-2 px-2 py-2.5 rounded border transition-all ${
-                      pattern.image_url 
-                        ? 'bg-green-500/10 text-green-400 border-green-500/30 hover:bg-green-500/20' 
-                        : 'bg-slate-800/30 text-slate-600 border-slate-700/30'
-                    }`}
-                    disabled={!pattern.image_url}
-                  >
-                    <span className="font-bold text-[10px] uppercase tracking-tight">Image</span>
-                    <Eye size={12} />
-                  </button>
+                  {/* VISUAL Row */}
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-bold text-green-500 uppercase tracking-wider w-14">Visual</span>
+                    <div className="flex-grow grid grid-cols-3 gap-2">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleInspect(pattern.visual_layer, 'Visual Layers', pattern.word); }}
+                        className={`flex items-center justify-center p-2 rounded border transition-all ${
+                          pattern.visual_layer ? 'bg-green-500/10 text-green-400 border-green-500/30 hover:bg-green-500/20' : 'bg-slate-800/30 text-slate-600 border-slate-700/30'
+                        }`}
+                        title="Visual Layers"
+                        disabled={!pattern.visual_layer}
+                      >
+                        <Layout size={14} />
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleInspect(pattern.visual_essence, 'Visual Essence', pattern.word); }}
+                        className={`flex items-center justify-center p-2 rounded border transition-all ${
+                          pattern.visual_essence ? 'bg-green-500/10 text-green-400 border-green-500/30 hover:bg-green-500/20' : 'bg-slate-800/30 text-slate-600 border-slate-700/30'
+                        }`}
+                        title="Visual Essence"
+                        disabled={!pattern.visual_essence}
+                      >
+                        <Zap size={14} />
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleOpenPattern(pattern); }}
+                        className={`flex items-center justify-center p-2 rounded border transition-all ${
+                          pattern.image_url ? 'bg-green-500/10 text-green-400 border-green-500/30 hover:bg-green-500/20' : 'bg-slate-800/30 text-slate-600 border-slate-700/30'
+                        }`}
+                        title="View Pattern"
+                        disabled={!pattern.image_url}
+                      >
+                        <Eye size={14} />
+                      </button>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="text-xs text-slate-500 mt-auto">
