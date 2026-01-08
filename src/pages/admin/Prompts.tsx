@@ -189,7 +189,9 @@ export function Prompts() {
     const history = versions.filter(p => p.id !== activeVersion.id).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
     
     // Display name mapping
-    const displayName = slug.replace('word_verbal_', '').replace('word_visual_', '').replace('_', ' ');
+    let displayName = slug.replace('word_verbal_', '').replace('word_visual_', '').replace('_', ' ');
+    // Pluralize "layer" to "layers"
+    if (displayName === 'layer') displayName = 'layers';
 
     return (
                 <div key={slug} className="bg-slate-900/30 border border-slate-800 rounded-xl overflow-hidden">
