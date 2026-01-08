@@ -11,10 +11,10 @@ import {
   Loader2,
   Eye,
   Layers,
-  Sparkles,
-  Mic,
-  Layout,
-  Zap
+  Droplet,
+  Podcast,
+  LayoutDashboard,
+  Sparkle
 } from 'lucide-react';
 
 interface Pattern {
@@ -233,7 +233,7 @@ export function Library() {
                         title="Verbal Essence"
                         disabled={!pattern.verbal_essence}
                       >
-                        <Sparkles size={14} />
+                        <Droplet size={14} />
                       </button>
                       <button
                         onClick={(e) => { e.stopPropagation(); handleInspect(pattern.verbal_voicing, 'Voicing', pattern.word); }}
@@ -243,7 +243,7 @@ export function Library() {
                         title="Voicing"
                         disabled={!pattern.verbal_voicing}
                       >
-                        <Mic size={14} />
+                        <Podcast size={14} />
                       </button>
                     </div>
                   </div>
@@ -260,7 +260,7 @@ export function Library() {
                         title="Visual Layers"
                         disabled={!pattern.visual_layer}
                       >
-                        <Layout size={14} />
+                        <LayoutDashboard size={14} />
                       </button>
                       <button
                         onClick={(e) => { e.stopPropagation(); handleInspect(pattern.visual_essence, 'Visual Essence', pattern.word); }}
@@ -270,7 +270,7 @@ export function Library() {
                         title="Visual Essence"
                         disabled={!pattern.visual_essence}
                       >
-                        <Zap size={14} />
+                        <Sparkle size={14} />
                       </button>
                       <button
                         onClick={(e) => { e.stopPropagation(); handleOpenPattern(pattern); }}
