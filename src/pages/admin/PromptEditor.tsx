@@ -172,23 +172,24 @@ export function PromptEditor() {
     const newInputs = { ...testInputs };
     
     // Intelligent mapping based on V2 schema and common variable names
+    // API returns flat structure: {word, essence, voicing, visual_essence, layers, image_brief}
     const mappings: Record<string, any> = {
-      word: pattern.word || pattern.seed?.text,
-      seed: pattern.seed?.text,
-      input: pattern.word || pattern.seed?.text,
-      voicing: pattern.verbal_voicing?.content || pattern.voicing,
-      verbal_voicing: pattern.verbal_voicing?.content || pattern.voicing,
-      word_voicing: pattern.verbal_voicing?.content || pattern.voicing,
-      text: pattern.verbal_voicing?.content || pattern.voicing,
-      essence: pattern.verbal_essence?.content || pattern.visual_essence?.content || pattern.essence,
-      verbal_essence: pattern.verbal_essence?.content,
-      visual_essence: pattern.visual_essence?.content,
-      description: pattern.verbal_essence?.content || pattern.visual_essence?.content || pattern.essence,
-      layers: pattern.verbal_layer?.content || pattern.visual_layer?.content || pattern.layers,
-      verbal_layer: pattern.verbal_layer?.content,
-      visual_layer: pattern.visual_layer?.content,
-      brief: pattern.visual_layer?.content || pattern.image_brief,
-      image_brief: pattern.visual_layer?.content || pattern.image_brief
+      word: pattern.word,
+      seed: pattern.word,
+      input: pattern.word,
+      voicing: pattern.voicing,
+      verbal_voicing: pattern.voicing,
+      word_voicing: pattern.voicing,
+      text: pattern.voicing,
+      essence: pattern.essence || pattern.visual_essence,
+      verbal_essence: pattern.essence,
+      visual_essence: pattern.visual_essence,
+      description: pattern.essence || pattern.visual_essence,
+      layers: pattern.layers || pattern.image_brief,
+      verbal_layer: pattern.layers,
+      visual_layer: pattern.image_brief,
+      brief: pattern.image_brief,
+      image_brief: pattern.image_brief
     };
 
     // Apply mappings to all detected variables
