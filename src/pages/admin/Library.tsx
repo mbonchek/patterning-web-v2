@@ -245,16 +245,16 @@ export function Library() {
                     Visual
                   </button>
                   <button
-                    onClick={(e) => { e.stopPropagation(); handleInspect(pattern.image_brief || null, 'Brief', pattern.word); }}
+                    onClick={(e) => { e.stopPropagation(); handleInspect(pattern.visual_layer || null, 'Visual Layer', pattern.word); }}
                     className={`flex items-center gap-2 px-2 py-1.5 rounded ${
-                      pattern.image_brief 
+                      pattern.visual_layer 
                         ? 'bg-teal-500/10 text-teal-400 hover:bg-teal-500/20' 
                         : 'bg-slate-800/50 text-slate-600'
                     }`}
-                    disabled={!pattern.image_brief}
+                    disabled={!pattern.visual_layer}
                   >
                     <ImageIcon size={12} />
-                    Brief
+                    Visual Layer
                   </button>
                 </div>
 
@@ -318,31 +318,31 @@ export function Library() {
             <div className="space-y-2">
               <button
                 onClick={() => handleAction('clear_layers')}
-                disabled={!selectedPattern.layers || processingAction}
+                disabled={!selectedPattern.verbal_layer || processingAction}
                 className="w-full text-left px-4 py-2 bg-slate-800/50 hover:bg-slate-800 rounded text-sm text-slate-300 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Clear Layers
               </button>
               <button
                 onClick={() => handleAction('clear_voicing')}
-                disabled={!selectedPattern.voicing || processingAction}
+                disabled={!selectedPattern.verbal_voicing || processingAction}
                 className="w-full text-left px-4 py-2 bg-slate-800/50 hover:bg-slate-800 rounded text-sm text-slate-300 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Clear Voicing
               </button>
               <button
                 onClick={() => handleAction('clear_essence')}
-                disabled={!selectedPattern.essence || processingAction}
+                disabled={!selectedPattern.verbal_essence || processingAction}
                 className="w-full text-left px-4 py-2 bg-slate-800/50 hover:bg-slate-800 rounded text-sm text-slate-300 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Clear Essence
               </button>
               <button
-                onClick={() => handleAction('clear_brief')}
-                disabled={!selectedPattern.image_brief || processingAction}
+                onClick={() => handleAction('clear_visual_layer')}
+                disabled={!selectedPattern.visual_layer || processingAction}
                 className="w-full text-left px-4 py-2 bg-slate-800/50 hover:bg-slate-800 rounded text-sm text-slate-300 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Clear Brief
+                Clear Visual Layer
               </button>
               <button
                 onClick={() => handleAction('clear_image')}
