@@ -23,6 +23,8 @@ interface HttpTrace {
     total: number;
   };
   model?: string;
+  step?: string;
+  prompt_slug?: string;
 }
 
 interface StepDetail {
@@ -287,7 +289,10 @@ export function VoiceLab() {
                 {/* Step-by-step timeline */}
                 {selectedLog.stepDetails.map((detail, idx) => {
                   const savedEvent = selectedLog.savedEvents.find(s => s.step === detail.step);
-                  const httpTrace = selectedLog.httpTraces[idx];
+                  // Find httpTrace by step name (most reliable) or prompt_slug
+                  const httpTrace = selectedLog.httpTraces.find(t => 
+                    t.step === detail.step || t.prompt_slug === detail.prompt_slug
+                  );
                   
                   return (
                     <div key={idx} className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
