@@ -168,7 +168,7 @@ export function PromptEditor() {
     const newInputs = { ...testInputs };
     
     // Intelligent mapping based on V2 schema and common variable names
-    // API returns flat structure: {word, essence, voicing, visual_essence, layers, image_brief}
+    // API returns flat structure: {word, essence, voicing, visual_essence, layers, visual_layer}
     const mappings: Record<string, any> = {
       word: pattern.word,
       seed: pattern.word,
@@ -181,11 +181,10 @@ export function PromptEditor() {
       verbal_essence: pattern.essence,
       visual_essence: pattern.visual_essence,
       description: pattern.essence || pattern.visual_essence,
-      layers: pattern.layers || pattern.image_brief,
+      layers: pattern.layers,
       verbal_layer: pattern.layers,
-      visual_layer: pattern.image_brief,
-      brief: pattern.image_brief,
-      image_brief: pattern.image_brief
+      visual_layer: pattern.visual_layer,
+      brief: pattern.visual_essence
     };
 
     // Apply mappings to all detected variables
