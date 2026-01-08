@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ChevronDown, ChevronUp, ArrowLeft } from 'lucide-react';
+import { ChevronDown, ChevronUp, ArrowLeft, Maximize2 } from 'lucide-react';
 
 interface Pattern {
   word: string;
@@ -19,6 +19,7 @@ export default function PatternDetail() {
   const [loading, setLoading] = useState(true);
   const [voicingOpen, setVoicingOpen] = useState(false);
   const [layersOpen, setLayersOpen] = useState(false);
+  const [fullscreenImage, setFullscreenImage] = useState(false);
   
   console.log('PatternDetail mounted, word:', word);
 
@@ -97,6 +98,14 @@ export default function PatternDetail() {
               className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-slate-900/90" />
+            {/* Fullscreen Button */}
+            <button
+              onClick={() => setFullscreenImage(true)}
+              className="absolute top-6 right-6 p-3 bg-black/50 hover:bg-black/70 backdrop-blur-sm rounded-lg text-white transition-all z-10"
+              title="View fullscreen"
+            >
+              <Maximize2 className="w-5 h-5" />
+            </button>
           </>
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-purple-600 to-blue-600" />
@@ -196,6 +205,30 @@ export default function PatternDetail() {
           </div>
         </div>
       </div>
+
+      {/* Fullscreen Image Modal */}
+      {fullscreenImage && pattern.image_url && (
+        <div 
+          className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4"
+          onClick={() => setFullscreenImage(false)}
+        >
+          <button
+            onClick={() => setFullscreenImage(false)}
+            className="absolute top-6 right-6 p-3 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-lg text-white transition-all"
+            title="Close fullscreen"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+          <img
+            src={pattern.image_url}
+            alt={pattern.word}
+            className="max-w-full max-h-full object-contain"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
     </div>
   );
 }
