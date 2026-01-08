@@ -231,7 +231,7 @@ export function PromptEditor() {
       
       if (sameSlug.length > 0) {
         // Sort versions numerically
-        const versions = sameSlug.map((p: Prompt) => p.version).sort((a, b) => b - a);
+        const versions = sameSlug.map((p: Prompt) => p.version).sort((a: number, b: number) => b - a);
         const latestVersion = versions[0];
         const latestPrompt = sameSlug.find((p: Prompt) => p.version === latestVersion);
         
