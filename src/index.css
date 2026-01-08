@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,200..900;1,7..72,200..900&family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap');
 
 @theme {
   --color-background: oklch(0.14 0.01 260); /* Dark Navy */
@@ -11,7 +12,8 @@
   --color-muted-foreground: oklch(0.7 0.02 260);
 
   --color-border: oklch(0.25 0.02 260);
-  --font-sans: "Inter", sans-serif;
+  --font-sans: "Lato", sans-serif;
+  --font-serif: "Literata", serif;
 }
 
 /* Global Reset */
@@ -29,3 +31,11 @@ body {
   min-width: 320px;
   min-height: 100vh;
 }
+
+/* Typography - Headings use Literata serif */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-serif);
+  font-weight: 600;
+}
+
+/* Body text uses Lato sans-serif (already set as default) */
