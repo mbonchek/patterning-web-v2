@@ -116,14 +116,13 @@ export function VoiceLab() {
                       timestamp: new Date().toISOString()
                     };
                     currentTrace = newTrace;
+                    // Append to history instead of replacing
                     log.httpTraces = [...log.httpTraces, newTrace];
                   } else if (currentTrace) {
-                    // Update existing trace (response)
-                    const lastIdx = log.httpTraces.length - 1;
-                    log.httpTraces[lastIdx] = {
-                      ...log.httpTraces[lastIdx],
-                      ...trace
-                    };
+                    // Update the most recent trace with response data
+                    log.httpTraces = log.httpTraces.map((t, idx) => 
+                      idx === log.httpTraces.length - 1 ? { ...t, ...trace } : t
+                    );
                   }
                 } else if (data.type === 'success') {
                   log.message = `Completed ${data.step}`;
