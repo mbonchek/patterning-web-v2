@@ -325,12 +325,57 @@ export function PromptEditor() {
   };
 
   const handleRunComparison = async () => {
+    if (!activePrompt) {
+      setTestError('No active version to compare against');
+      return;
+    }
+    
+    setTestOutput(null);
+    setActiveOutput(null);
+    setTestError(null);
     setRunning(true);
-    await Promise.all([
-      handleRunTest(false),
-      activePrompt ? handleRunTest(true) : Promise.resolve()
-    ]);
-    setRunning(false);
+
+    try {
+      // Run both in parallel
+      const [draftResult, liveResult] = await Promise.all([
+        // Draft version
+        fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/admin/generate`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            template: template,
+            inputs: testInputs,
+            config: config,
+            slug: prompt?.slug || ''
+          })
+        }).then(r => r.json()),
+        // Live version
+        fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/admin/generate`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            template: activePrompt.template,
+            inputs: testInputs,
+            config: {
+              temperature: activePrompt.temperature,
+              top_p: activePrompt.top_p,
+              max_tokens: activePrompt.max_tokens
+            },
+            slug: prompt?.slug || ''
+          })
+        }).then(r => r.json())
+      ]);
+
+      if (draftResult.error) throw new Error('Draft: ' + draftResult.error);
+      if (liveResult.error) throw new Error('Live: ' + liveResult.error);
+
+      setTestOutput(draftResult.output);
+      setActiveOutput(liveResult.output);
+    } catch (err: any) {
+      setTestError(err.message);
+    } finally {
+      setRunning(false);
+    }
   };
 
   if (loading) return <div className="text-slate-500 p-8 animate-pulse">Loading prompt DNA...</div>;
@@ -518,7 +563,7 @@ export function PromptEditor() {
                 {/* Draft Output */}
                 <div className="flex flex-col min-h-0">
                   <div className="flex justify-between items-center mb-1">
-                    <span className="text-[10px] text-teal-500 font-bold uppercase">Draft Output (v{prompt.version})</span>
+                    <span className="text-[10px] text-teal-500 font-bold uppercase">Draft Output (unsaved)</span>
                     {testOutput && (
                       <button onClick={() => navigator.clipboard.writeText(testOutput)} className="text-slate-500 hover:text-white"><Copy size={12} /></button>
                     )}
