@@ -253,14 +253,15 @@ export function PromptEditor() {
         }
         
         // Suggest version based on change size
+        // Using simple 0.1 increments: 1.1, 1.2, 1.3, etc.
         const major = Math.floor(latestVersion);
         const minor = Math.round((latestVersion - major) * 10);
         
         if (isMajorChange) {
-          // Major version bump (e.g., 2.1 → 3.0)
+          // Major version bump (e.g., 1.2 → 2.0)
           suggestedVersion = `${major + 1}.0`;
         } else {
-          // Minor version bump (e.g., 2.1 → 2.2)
+          // Minor version bump (e.g., 1.1 → 1.2)
           suggestedVersion = `${major}.${minor + 1}`;
         }
       }
