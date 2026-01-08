@@ -1,6 +1,6 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save, Play, Check, AlertCircle, Copy, Settings, Search, History, Diff, Eye, EyeOff } from 'lucide-react';
+import { ArrowLeft, Save, Play, Check, AlertCircle, Copy, Settings, Search, Diff } from 'lucide-react';
 
 interface Prompt {
   id: string;

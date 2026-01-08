@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Mic2, Play, AlertCircle, CheckCircle, Loader2, ChevronRight, ChevronDown, RefreshCw, Globe, Clock, Copy } from 'lucide-react';
+import { Mic2, Play, AlertCircle, CheckCircle, Loader2, ChevronRight, ChevronDown, Globe } from 'lucide-react';
 
 interface HttpTrace {
   timestamp: string;
@@ -41,7 +41,7 @@ export function VoiceLab() {
   const [selectedLog, setSelectedLog] = useState<LogEntry | null>(null);
   const [expandedHttpTraces, setExpandedHttpTraces] = useState<Set<number>>(new Set());
 
-  const handleStart = async (force = true) => {
+  const handleStart = async () => {
     const words = inputWords
       .split(/[\n,]/)
       .map(w => w.trim())
@@ -111,11 +111,12 @@ export function VoiceLab() {
                   const trace = data.http_trace;
                   if (trace.method) {
                     // Start of a new trace
-                    currentTrace = {
+                    const newTrace = {
                       ...trace,
                       timestamp: new Date().toISOString()
                     };
-                    log.httpTraces = [...log.httpTraces, currentTrace];
+                    currentTrace = newTrace;
+                    log.httpTraces = [...log.httpTraces, newTrace];
                   } else if (currentTrace) {
                     // Update existing trace (response)
                     const lastIdx = log.httpTraces.length - 1;

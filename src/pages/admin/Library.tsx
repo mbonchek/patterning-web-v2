@@ -9,9 +9,6 @@ import {
   Trash2,
   X,
   Loader2,
-  Layers,
-  Mic,
-  Sparkles,
   Eye
 } from 'lucide-react';
 
