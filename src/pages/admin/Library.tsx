@@ -22,6 +22,7 @@ interface Pattern {
   voicing: string | null;
   essence: string | null;
   image_url: string | null;
+  thumbnail_url?: string | null;
   image_brief?: string | null;
   created_at: string;
   layers_version?: string;
@@ -180,7 +181,7 @@ export function Library() {
               <div className="relative h-40 overflow-hidden bg-slate-950">
                 {pattern.image_url ? (
                   <img 
-                    src={pattern.image_url} 
+                    src={pattern.thumbnail_url || pattern.image_url} 
                     alt={pattern.word} 
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
                     loading="lazy" 
@@ -273,7 +274,7 @@ export function Library() {
             <div key={pattern.id} className="bg-slate-900/50 border border-slate-800 hover:border-teal-500/50 rounded-lg p-4 flex items-center gap-4 transition-colors">
               <div className="w-16 h-16 rounded overflow-hidden bg-slate-950 flex-shrink-0">
                 {pattern.image_url ? (
-                  <img src={pattern.image_url} alt={pattern.word} className="w-full h-full object-cover" />
+                  <img src={pattern.thumbnail_url || pattern.image_url} alt={pattern.word} className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-slate-700">
                     <ImageIcon size={24} opacity={0.2} />
