@@ -165,14 +165,6 @@ export function PromptEditor() {
   const handleLoadTestData = (pattern: any) => {
     if (!pattern) return;
     
-    console.log('=== PATTERN LOADING DEBUG ===');
-    console.log('Full pattern object:', JSON.stringify(pattern, null, 2));
-    console.log('pattern.word:', pattern.word);
-    console.log('pattern.visual_layer:', pattern.visual_layer);
-    console.log('pattern.layers:', pattern.layers);
-    console.log('pattern.image_brief:', pattern.image_brief);
-    console.log('All pattern keys:', Object.keys(pattern));
-    
     const newInputs = { ...testInputs };
     
     // Intelligent mapping based on V2 schema and common variable names
@@ -195,21 +187,15 @@ export function PromptEditor() {
       brief: pattern.visual_essence
     };
 
-    // Apply mappings to all detected variables
-    console.log('detectedVars:', detectedVars);
-    detectedVars.forEach(v => {
+    // Apply mappings to all available variables (not detectedVars, which depends on template loading)
+    const varNames = availableVars.map(v => v.name.replace(/\{\{|\}\}/g, '').trim());
+    varNames.forEach(v => {
       if (mappings[v]) {
         newInputs[v] = mappings[v];
-        console.log(`Setting newInputs[${v}] =`, mappings[v]?.substring(0, 100));
-      } else {
-        console.log(`No mapping for variable: ${v}`);
       }
     });
     
-    console.log('Final newInputs:', newInputs);
-    console.log('About to call setTestInputs');
     setTestInputs(newInputs);
-    console.log('setTestInputs called');
   };
 
   const loadPrompt = async () => {
@@ -728,12 +714,8 @@ export function PromptEditor() {
 
             {/* Variable Inputs */}
             <div className="grid grid-cols-1 gap-3 mb-4 max-h-80 overflow-y-auto pr-2">
-              {(() => {
-                console.log('Rendering input fields, availableVars:', availableVars);
-                return availableVars.map((varInfo) => {
+              {availableVars.map((varInfo) => {
                   const variable = varInfo.name.replace(/\{\{|\}\}/g, '').trim();
-                  console.log('Rendering field for variable:', variable);
-                  console.log(`testInputs[${variable}]:`, testInputs[variable]?.substring(0, 100));
                   return (
                 <div key={variable}>
                   <label className="text-[10px] text-slate-500 block font-mono mb-1 uppercase tracking-tighter">{variable}</label>
