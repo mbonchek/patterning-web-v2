@@ -782,7 +782,15 @@ export function PromptEditor() {
                     )}
                   </div>
                   <div className="flex-grow bg-black/50 rounded border border-slate-800 p-4 overflow-y-auto font-mono text-xs text-slate-300 leading-relaxed">
-                    {testOutput || <div className="text-slate-700 italic">Run test to see draft output...</div>}
+                    {testOutput ? (
+                      testOutput.startsWith('data:image') ? (
+                        <img src={testOutput} alt="Generated image" className="max-w-full h-auto rounded" />
+                      ) : (
+                        testOutput
+                      )
+                    ) : (
+                      <div className="text-slate-700 italic">Run test to see draft output...</div>
+                    )}
                   </div>
                 </div>
 
@@ -799,7 +807,11 @@ export function PromptEditor() {
                       {!activePrompt ? (
                         <div className="text-slate-700 italic">No other active version to compare.</div>
                       ) : activeOutput ? (
-                        activeOutput
+                        activeOutput.startsWith('data:image') ? (
+                          <img src={activeOutput} alt="Generated image" className="max-w-full h-auto rounded" />
+                        ) : (
+                          activeOutput
+                        )
                       ) : (
                         <div className="text-slate-700 italic">Run comparison to see live output...</div>
                       )}
