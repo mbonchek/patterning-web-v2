@@ -712,7 +712,7 @@ export function PromptEditor() {
             </div>
 
             {/* Variable Inputs */}
-            <div className="grid grid-cols-1 gap-3 mb-4 max-h-48 overflow-y-auto pr-2">
+            <div className="grid grid-cols-1 gap-3 mb-4 max-h-80 overflow-y-auto pr-2">
               {(() => {
                 console.log('Rendering input fields, availableVars:', availableVars);
                 return availableVars.map((varInfo) => {
