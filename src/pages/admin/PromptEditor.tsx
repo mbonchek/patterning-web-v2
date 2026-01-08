@@ -108,6 +108,10 @@ export function PromptEditor() {
       'word_visual_essence': [
         { name: '{{word}}', description: 'The word being analyzed' },
         { name: '{{visual_layer}}', description: 'The visual structure from the previous step' }
+      ],
+      'word_visual_image': [
+        { name: '{{word}}', description: 'The word being analyzed' },
+        { name: '{{visual_essence}}', description: 'The visual brief for image generation' }
       ]
     };
     return variableMap[slug] || [];
