@@ -132,11 +132,14 @@ export function PromptEditor() {
   useEffect(() => {
     if (!prompt) return;
     const availableVarNames = availableVars.map(v => v.name.replace(/\{\{|\}\}/g, '').trim());
+    console.log('Available variables for', prompt.slug, ':', availableVarNames);
+    console.log('Available vars object:', availableVars);
     setTestInputs(prev => {
       const next = { ...prev };
       availableVarNames.forEach(v => {
         if (next[v] === undefined) next[v] = '';
       });
+      console.log('Test inputs after initialization:', next);
       return next;
     });
   }, [prompt, availableVars]);
