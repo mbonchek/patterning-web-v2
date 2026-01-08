@@ -72,6 +72,10 @@ export function PromptEditor() {
   const [saveVersion, setSaveVersion] = useState('');
   const [saveComment, setSaveComment] = useState('');
 
+  // Version History State
+  const [versionHistory, setVersionHistory] = useState<Prompt[]>([]);
+  const [showHistory, setShowHistory] = useState(false);
+
   useEffect(() => {
     loadPrompt();
     loadRecentPatterns();
@@ -192,6 +196,17 @@ export function PromptEditor() {
         if (active && active.id !== data.id) {
           setActivePrompt(active);
         }
+
+        // Load version history for this slug
+        const history = allPrompts
+          .filter((p: Prompt) => p.slug === data.slug)
+          .sort((a: Prompt, b: Prompt) => {
+            // Sort by version descending (most recent first)
+            const versionA = a.version.toString();
+            const versionB = b.version.toString();
+            return versionB.localeCompare(versionA, undefined, { numeric: true, sensitivity: 'base' });
+          });
+        setVersionHistory(history);
       }
     } catch (error) {
       console.error('Error loading prompt:', error);
@@ -344,15 +359,23 @@ export function PromptEditor() {
         </div>
 
         <div className="flex gap-3">
-          <button
+          <button 
             onClick={() => setShowDiff(!showDiff)}
-            className={`px-4 py-2 rounded-md flex items-center gap-2 transition-colors border ${showDiff ? 'bg-blue-900/20 border-blue-500 text-blue-400' : 'bg-transparent border-slate-700 text-slate-400 hover:text-white'}`}
-            title="Compare with Live Version"
+            className={`px-4 py-2 rounded-md flex items-center gap-2 transition-colors border ${showDiff ? 'bg-slate-800 border-blue-500 text-blue-400' : 'bg-transparent border-slate-700 text-slate-400 hover:text-white'}`}
           >
             <Diff size={18} />
-            {showDiff ? 'Hide Comparison' : 'Compare Live'}
+            Compare Live
           </button>
-          <button
+          <button 
+            onClick={() => setShowHistory(!showHistory)}
+            className={`px-4 py-2 rounded-md flex items-center gap-2 transition-colors border ${showHistory ? 'bg-slate-800 border-purple-500 text-purple-400' : 'bg-transparent border-slate-700 text-slate-400 hover:text-white'}`}
+          >
+            <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            History ({versionHistory.length})
+          </button>
+          <button 
             onClick={() => setShowSettings(!showSettings)}
             className={`px-4 py-2 rounded-md flex items-center gap-2 transition-colors border ${showSettings ? 'bg-slate-800 border-teal-500 text-teal-400' : 'bg-transparent border-slate-700 text-slate-400 hover:text-white'}`}
           >
@@ -530,6 +553,67 @@ export function PromptEditor() {
         </div>
 
       </div>
+
+      {/* Version History Panel */}
+      {showHistory && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-xl max-w-3xl w-full max-h-[80vh] overflow-hidden flex flex-col">
+            <div className="flex justify-between items-center p-6 border-b border-slate-800">
+              <h2 className="text-xl font-bold text-white">Version History</h2>
+              <button 
+                onClick={() => setShowHistory(false)}
+                className="text-slate-400 hover:text-white"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="flex-grow overflow-y-auto p-6 space-y-3">
+              {versionHistory.length === 0 ? (
+                <div className="text-center py-12 text-slate-500">No version history available</div>
+              ) : (
+                versionHistory.map((v) => (
+                  <div 
+                    key={v.id}
+                    onClick={() => {
+                      navigate(`/admin/prompts/${v.id}`);
+                      setShowHistory(false);
+                    }}
+                    className={`p-4 rounded-lg border transition-all cursor-pointer ${
+                      v.id === prompt?.id 
+                        ? 'bg-purple-950/30 border-purple-500/50' 
+                        : 'bg-slate-950/50 border-slate-800 hover:border-purple-500/30'
+                    }`}
+                  >
+                    <div className="flex justify-between items-start mb-2">
+                      <div className="flex items-center gap-3">
+                        <span className="text-lg font-bold text-white font-mono">v{v.version}</span>
+                        {v.is_active && (
+                          <span className="text-[10px] font-bold text-green-400 bg-green-950/50 px-2 py-0.5 rounded-full border border-green-500/30">
+                            ACTIVE
+                          </span>
+                        )}
+                        {v.id === prompt?.id && (
+                          <span className="text-[10px] font-bold text-purple-400 bg-purple-950/50 px-2 py-0.5 rounded-full border border-purple-500/30">
+                            CURRENT
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-xs text-slate-500">
+                        {v.created_at ? new Date(v.created_at).toLocaleDateString() : 'Unknown date'}
+                      </span>
+                    </div>
+                    {v.description && (
+                      <p className="text-sm text-slate-400 line-clamp-2">{v.description}</p>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Save Dialog Modal */}
       {showSaveDialog && (
