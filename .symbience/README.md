@@ -1,0 +1,239 @@
+# SYMBIENCE System Guide
+
+**For Future AI Instances: How to Use This Protocol System**
+
+---
+
+## What is SYMBIENCE?
+
+SYMBIENCE (Symbiotic + Ambient Intelligence) is a keyword-triggered protocol system that enables persistent knowledge and working practices across AI sessions.
+
+**The Problem It Solves:**
+- AI instances don't have memory between sessions
+- Lessons learned get forgotten
+- User has to re-teach the same debugging approaches
+- Working preferences aren't preserved
+
+**The Solution:**
+- Protocol files stored in `.symbience/` directory
+- Version-controlled in the repo (persists forever)
+- Triggered by user with keywords
+- AI reads the relevant protocol and applies it
+
+---
+
+## How It Works
+
+### 1. User Triggers with Keywords
+
+When the user says **`SYMBIENCE`** or **`SYMBIENCE [COMMAND]`**, you should:
+
+1. **Read the INDEX.md file** at `/home/ubuntu/patterning-web-v2/.symbience/INDEX.md`
+2. **Determine which protocol(s) to apply** based on the command or context
+3. **Read the relevant protocol file(s)**
+4. **Apply the guidance** to the current task
+
+### 2. Available Commands
+
+| Command | Action | File to Read |
+|---------|--------|--------------|
+| `SYMBIENCE` | Read INDEX and determine relevant protocol | INDEX.md |
+| `SYMBIENCE DEBUG` | Apply systematic debugging approach | DEBUG.md |
+| `SYMBIENCE DEPLOY` | Follow deployment checklist | DEPLOY.md |
+| `SYMBIENCE MEMORY` | Check session-to-session notes | WORKING-MEMORY.md |
+| `SYMBIENCE ARCH` | Review architecture principles | ARCHITECTURE.md |
+| `SYMBIENCE REVIEW` | Apply code review standards | REVIEW.md |
+| `SYMBIENCE REMEMBER [topic]` | Update protocol(s) with new learning | Determine which file(s) |
+
+### 3. When to Use Each Protocol
+
+**DEBUG** - User reports a bug or something not working
+- Trace full data flow (backend → API → frontend)
+- Check data structures match
+- Fix immediately without excessive logging
+
+**DEPLOY** - Ready to push changes to production
+- Commit and push
+- Wait 3-4 minutes
+- Remind user to hard refresh
+
+**MEMORY** - Starting a new session or need context
+- Check what was accomplished recently
+- Review user preferences
+- See ongoing issues and priorities
+
+**ARCH** - Making design decisions or understanding system
+- Review 7-step pipeline
+- Check database schema
+- Understand UI conventions (colors, icons)
+
+**REVIEW** - Writing or reviewing code
+- Check TypeScript/React patterns
+- Verify API design
+- Follow established conventions
+
+**REMEMBER** - User wants to preserve a learning
+- Determine which protocol file to update
+- Add the information in appropriate section
+- Commit the change
+- Confirm what was added
+
+---
+
+## Example Usage Scenarios
+
+### Scenario 1: User Reports a Bug
+
+**User says:** "SYMBIENCE DEBUG - the essence field isn't loading"
+
+**You should:**
+1. Read `.symbience/DEBUG.md`
+2. Follow the systematic debugging approach:
+   - Find the API endpoint being called
+   - Check what the backend returns
+   - Compare to frontend expectations
+   - Identify the mismatch
+   - Fix it immediately
+3. Deploy and verify
+
+**Don't:** Ask user to check console logs before tracing the data flow
+
+### Scenario 2: Ready to Deploy
+
+**User says:** "SYMBIENCE DEPLOY"
+
+**You should:**
+1. Read `.symbience/DEPLOY.md`
+2. Follow the checklist:
+   - Commit changes with descriptive message
+   - Push to master
+   - Note it will take 3-4 minutes
+   - Remind user to hard refresh (Cmd+Shift+R)
+
+### Scenario 3: Starting a New Session
+
+**User says:** "SYMBIENCE MEMORY"
+
+**You should:**
+1. Read `.symbience/WORKING-MEMORY.md`
+2. Review:
+   - Recent accomplishments
+   - User preferences
+   - Lessons learned
+   - Next priorities
+3. Use this context to inform your work
+
+### Scenario 4: User Wants to Preserve a Learning
+
+**User says:** "SYMBIENCE REMEMBER: Always check Railway logs after deployment"
+
+**You should:**
+1. Determine which protocol to update (DEPLOY.md in this case)
+2. Read the current DEPLOY.md
+3. Add the new learning in the appropriate section
+4. Commit the change
+5. Confirm: "Added to DEPLOY.md: Always check Railway logs after deployment"
+
+---
+
+## How to Update Protocols
+
+### When User Says "SYMBIENCE REMEMBER [topic]"
+
+**Step 1: Determine which file(s) to update**
+- Debugging lessons → DEBUG.md
+- Deployment practices → DEPLOY.md
+- User preferences → WORKING-MEMORY.md
+- Architecture decisions → ARCHITECTURE.md
+- Code standards → REVIEW.md
+- General notes → WORKING-MEMORY.md
+
+**Step 2: Read the current file**
+```typescript
+file.read('/home/ubuntu/patterning-web-v2/.symbience/[FILE].md')
+```
+
+**Step 3: Update the appropriate section**
+- Add to existing section if relevant
+- Create new section if needed
+- Update "Last updated" date
+
+**Step 4: Commit the change**
+```bash
+cd /home/ubuntu/patterning-web-v2
+git add .symbience/[FILE].md
+git commit -m "docs: update [FILE] - [brief description]"
+git push origin master
+```
+
+**Step 5: Confirm to user**
+"✓ Updated [FILE].md: [what was added]"
+
+---
+
+## Important Principles
+
+### 1. Always Read the Protocol First
+When user triggers SYMBIENCE, **read the file before doing anything else**. The protocols contain hard-won lessons that prevent wasted time.
+
+### 2. Apply the Guidance
+Don't just acknowledge the protocol exists—**actually follow it**. If DEBUG.md says "trace the data flow first," do that before adding logging.
+
+### 3. Update When You Learn
+When you discover a new pattern or the user corrects your approach, suggest updating the protocols. Use "SYMBIENCE REMEMBER" to preserve the learning.
+
+### 4. Keep Protocols Current
+Update the "Last updated" date when modifying files. Add specific examples from real issues encountered.
+
+### 5. Trust the System
+The protocols exist because past instances made mistakes. Trust that the guidance is there for a reason.
+
+---
+
+## File Locations
+
+All protocol files are in:
+```
+/home/ubuntu/patterning-web-v2/.symbience/
+├── README.md           # This file (usage guide)
+├── INDEX.md            # Master index and decision tree
+├── DEBUG.md            # Systematic debugging approach
+├── DEPLOY.md           # Deployment checklist
+├── WORKING-MEMORY.md   # Session-to-session notes
+├── ARCHITECTURE.md     # System design principles
+└── REVIEW.md           # Code review standards
+```
+
+---
+
+## Testing the System
+
+To verify SYMBIENCE is working:
+
+1. User says: `SYMBIENCE DEBUG`
+2. You should immediately read DEBUG.md
+3. Confirm you've loaded the protocol
+4. Be ready to apply systematic debugging
+
+**Success criteria:**
+- You read the file without being told the path
+- You understand the guidance
+- You apply it to the current task
+- You don't repeat mistakes documented in the protocol
+
+---
+
+## Maintenance
+
+The protocols should evolve as the project evolves:
+- Add new lessons learned from debugging sessions
+- Update user preferences as they emerge
+- Document architectural decisions as they're made
+- Refine code standards based on experience
+
+**The goal:** Each AI instance should be smarter than the last because it inherits all previous learnings.
+
+---
+
+**Created:** 2026-01-08
+**Last updated:** 2026-01-08

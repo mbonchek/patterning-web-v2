@@ -4,6 +4,25 @@
 
 ---
 
+## SYMBIENCE Protocol System
+
+**Critical: Read this first when starting a new session**
+
+This project uses the SYMBIENCE protocol system for persistent knowledge across AI sessions. The protocols are stored in `.symbience/` directory.
+
+**How to use:**
+- When user says `SYMBIENCE [COMMAND]`, read the corresponding protocol file
+- `SYMBIENCE DEBUG` → Read `.symbience/DEBUG.md` for systematic debugging
+- `SYMBIENCE DEPLOY` → Read `.symbience/DEPLOY.md` for deployment checklist
+- `SYMBIENCE MEMORY` → Read this file for session context
+- `SYMBIENCE ARCH` → Read `.symbience/ARCHITECTURE.md` for system design
+- `SYMBIENCE REVIEW` → Read `.symbience/REVIEW.md` for code standards
+- `SYMBIENCE REMEMBER [topic]` → Update protocols with new learnings
+
+**See `.symbience/README.md` for complete usage guide.**
+
+---
+
 ## Current State (2026-01-08)
 
 ### Recent Accomplishments
@@ -18,7 +37,7 @@
 - Cleaned up active prompt status in database
 - **Fixed verbal_voicing rendering bug** (container max-height issue)
 - **Fixed verbal_essence loading bug** (data structure mismatch)
-- **Created SYMBIENCE protocol system**
+- **Created SYMBIENCE protocol system** (keyword-triggered persistent knowledge)
 
 ### Known Issues
 - None currently
