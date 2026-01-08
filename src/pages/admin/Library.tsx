@@ -18,17 +18,14 @@ import {
 interface Pattern {
   id: string;
   word: string;
-  layers: string | null;
-  voicing: string | null;
-  essence: string | null;
+  verbal_layer: string | null;
+  verbal_voicing: string | null;
+  verbal_essence: string | null;
+  visual_layer: string | null;
+  visual_essence: string | null;
   image_url: string | null;
   thumbnail_url?: string | null;
-  image_brief?: string | null;
   created_at: string;
-  layers_version?: string;
-  voicing_version?: string;
-  essence_version?: string;
-  image_version?: string;
 }
 
 export function Library() {
@@ -54,12 +51,12 @@ export function Library() {
   const fetchHistory = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/history?t=${Date.now()}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/patterns?t=${Date.now()}`, {
         headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate' }
       });
       if (res.ok) {
         const data = await res.json();
-        setPatterns(data);
+        setPatterns(data.patterns || []);
       }
     } catch (error) {
       console.error('Error fetching history:', error);
@@ -212,40 +209,40 @@ export function Library() {
                 {/* Component Status */}
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   <button
-                    onClick={(e) => { e.stopPropagation(); handleInspect(pattern.layers, 'Layers', pattern.word); }}
+                    onClick={(e) => { e.stopPropagation(); handleInspect(pattern.verbal_layer, 'Verbal Layer', pattern.word); }}
                     className={`flex items-center gap-2 px-2 py-1.5 rounded ${
-                      pattern.layers 
+                      pattern.verbal_layer 
                         ? 'bg-teal-500/10 text-teal-400 hover:bg-teal-500/20' 
                         : 'bg-slate-800/50 text-slate-600'
                     }`}
-                    disabled={!pattern.layers}
+                    disabled={!pattern.verbal_layer}
                   >
                     <Layers size={12} />
-                    Layers
+                    Verbal
                   </button>
                   <button
-                    onClick={(e) => { e.stopPropagation(); handleInspect(pattern.voicing, 'Voicing', pattern.word); }}
+                    onClick={(e) => { e.stopPropagation(); handleInspect(pattern.verbal_voicing, 'Voicing', pattern.word); }}
                     className={`flex items-center gap-2 px-2 py-1.5 rounded ${
-                      pattern.voicing 
+                      pattern.verbal_voicing 
                         ? 'bg-teal-500/10 text-teal-400 hover:bg-teal-500/20' 
                         : 'bg-slate-800/50 text-slate-600'
                     }`}
-                    disabled={!pattern.voicing}
+                    disabled={!pattern.verbal_voicing}
                   >
                     <Mic size={12} />
                     Voicing
                   </button>
                   <button
-                    onClick={(e) => { e.stopPropagation(); handleInspect(pattern.essence, 'Essence', pattern.word); }}
+                    onClick={(e) => { e.stopPropagation(); handleInspect(pattern.visual_essence, 'Visual Essence', pattern.word); }}
                     className={`flex items-center gap-2 px-2 py-1.5 rounded ${
-                      pattern.essence 
-                        ? 'bg-teal-500/10 text-teal-400 hover:bg-teal-500/20' 
+                      pattern.visual_essence 
+                        ? 'bg-purple-500/10 text-purple-400 hover:bg-purple-500/20' 
                         : 'bg-slate-800/50 text-slate-600'
                     }`}
-                    disabled={!pattern.essence}
+                    disabled={!pattern.visual_essence}
                   >
                     <Sparkles size={12} />
-                    Essence
+                    Visual
                   </button>
                   <button
                     onClick={(e) => { e.stopPropagation(); handleInspect(pattern.image_brief || null, 'Brief', pattern.word); }}
@@ -288,9 +285,9 @@ export function Library() {
                 </div>
               </div>
               <div className="flex gap-2">
-                {pattern.layers && <span className="text-xs text-teal-400">Layers</span>}
-                {pattern.voicing && <span className="text-xs text-teal-400">Voicing</span>}
-                {pattern.essence && <span className="text-xs text-teal-400">Essence</span>}
+                {pattern.verbal_layer && <span className="text-xs text-teal-400">Verbal</span>}
+                {pattern.verbal_voicing && <span className="text-xs text-teal-400">Voicing</span>}
+                {pattern.visual_essence && <span className="text-xs text-purple-400">Visual</span>}
                 {pattern.image_url && <span className="text-xs text-teal-400">Image</span>}
               </div>
               <button 
