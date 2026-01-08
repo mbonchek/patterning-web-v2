@@ -719,20 +719,19 @@ export function PromptEditor() {
             {/* Variable Inputs */}
             <div className="grid grid-cols-1 gap-3 mb-4 max-h-80 overflow-y-auto pr-2">
               {availableVars.map((varInfo) => {
-                  const variable = varInfo.name.replace(/\{\{|\}\}/g, '').trim();
-                  return (
-                <div key={variable}>
-                  <label className="text-[10px] text-slate-500 block font-mono mb-1 uppercase tracking-tighter">{variable}</label>
-                  <textarea 
-                    value={testInputs[variable] || ''}
-                    onChange={(e) => setTestInputs({...testInputs, [variable]: e.target.value})}
-                    className="w-full bg-slate-950 text-white text-xs p-2 rounded border border-slate-800 focus:border-teal-500 outline-none min-h-[60px] resize-y font-mono"
-                    placeholder={`Value for ${variable}`}
-                  />
-                </div>
-                  );
-                });
-              })()}
+                const variable = varInfo.name.replace(/\{\{|\}\}/g, '').trim();
+                return (
+                  <div key={variable}>
+                    <label className="text-[10px] text-slate-500 block font-mono mb-1 uppercase tracking-tighter">{variable}</label>
+                    <textarea 
+                      value={testInputs[variable] || ''}
+                      onChange={(e) => setTestInputs({...testInputs, [variable]: e.target.value})}
+                      className="w-full bg-slate-950 text-white text-xs p-2 rounded border border-slate-800 focus:border-teal-500 outline-none min-h-[60px] resize-y font-mono"
+                      placeholder={`Value for ${variable}`}
+                    />
+                  </div>
+                );
+              })}
             </div>
 
             {/* Output Area */}
