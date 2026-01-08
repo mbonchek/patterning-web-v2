@@ -61,35 +61,35 @@ export default function PatternDetail() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
-        <div className="text-white text-xl">Loading pattern...</div>
+      <div className="min-h-screen bg-[#0d1117] flex items-center justify-center">
+        <div className="text-[#00f0ff] text-xl font-serif">Loading pattern...</div>
       </div>
     );
   }
 
   if (!pattern) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
-        <div className="text-white text-xl">Pattern not found</div>
+      <div className="min-h-screen bg-[#0d1117] flex items-center justify-center">
+        <div className="text-[#00f0ff] text-xl font-serif">Pattern not found</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="min-h-screen bg-[#0d1117]">
       {/* Back Button */}
       <div className="absolute top-6 left-6 z-20">
         <button
           onClick={() => navigate('/admin/library')}
-          className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-lg text-white transition-all"
+          className="flex items-center gap-2 px-4 py-2 bg-[#1a1f2e]/80 hover:bg-[#1a1f2e] backdrop-blur-sm rounded-lg text-[#00f0ff] transition-all border border-[#00f0ff]/20 hover:border-[#00f0ff]/40"
         >
           <ArrowLeft className="w-5 h-5" />
-          Back to Library
+          <span className="font-sans">Back to Library</span>
         </button>
       </div>
 
-      {/* Hero Section - Full Width Image with Word Overlay */}
-      <div className="relative w-full h-[50vh] min-h-[400px] overflow-hidden">
+      {/* Hero Section - Full Width Image with Word and Verbal Essence Overlay */}
+      <div className="relative w-full h-[70vh] min-h-[600px] overflow-hidden">
         {pattern.image_url ? (
           <>
             <img
@@ -97,108 +97,114 @@ export default function PatternDetail() {
               alt={pattern.word}
               className="w-full h-full object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-slate-900/90" />
+            {/* Gradient overlay for text legibility */}
+            <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-[#0d1117]" />
+            
             {/* Fullscreen Button */}
             <button
               onClick={() => setFullscreenImage(true)}
-              className="absolute top-6 right-6 p-3 bg-black/50 hover:bg-black/70 backdrop-blur-sm rounded-lg text-white transition-all z-10"
+              className="absolute top-6 right-6 p-3 bg-[#1a1f2e]/80 hover:bg-[#1a1f2e] backdrop-blur-sm rounded-lg text-[#00f0ff] transition-all z-10 border border-[#00f0ff]/20 hover:border-[#00f0ff]/40"
               title="View fullscreen"
             >
               <Maximize2 className="w-5 h-5" />
             </button>
           </>
         ) : (
-          <div className="w-full h-full bg-gradient-to-br from-purple-600 to-blue-600" />
+          <div className="w-full h-full bg-gradient-to-br from-[#7c4dff] to-[#00f0ff]" />
         )}
         
-        {/* Word Overlay */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <h1 className="text-7xl md:text-9xl font-bold text-white drop-shadow-2xl tracking-tight">
+        {/* Word and Verbal Essence Overlay */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center">
+          <h1 className="text-7xl md:text-9xl font-serif font-semibold text-white drop-shadow-2xl tracking-tight mb-8">
             {pattern.word}
           </h1>
+          
+          {/* Verbal Essence in Overlay */}
+          {pattern.essence && (
+            <div className="max-w-3xl mx-auto">
+              <p className="text-xl md:text-2xl text-white/95 leading-relaxed font-sans drop-shadow-lg">
+                {pattern.essence}
+              </p>
+            </div>
+          )}
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-6 py-12">
-        {/* Essence and Brief Side-by-Side */}
-        <div className="grid md:grid-cols-2 gap-8 mb-12">
-          {/* Verbal Essence */}
-          <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10">
-            <h2 className="text-2xl font-semibold text-purple-300 mb-4">Verbal Essence</h2>
-            <div className="text-gray-200 leading-relaxed whitespace-pre-wrap">
-              {pattern.essence || 'No essence available'}
+      <div className="max-w-6xl mx-auto px-6 py-16">
+        {/* Visual Essence (Brief) - Full Width */}
+        {pattern.brief && (
+          <div className="mb-12 bg-[#1a1f2e]/60 backdrop-blur-sm rounded-2xl p-10 border border-[#00f0ff]/20 shadow-lg shadow-[#00f0ff]/5">
+            <h2 className="text-3xl font-serif font-semibold text-[#00f0ff] mb-6">Visual Essence</h2>
+            <div className="text-gray-300 text-lg leading-relaxed whitespace-pre-wrap font-sans">
+              {pattern.brief}
             </div>
           </div>
-
-          {/* Visual Essence (Brief) */}
-          <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10">
-            <h2 className="text-2xl font-semibold text-blue-300 mb-4">Visual Essence</h2>
-            <div className="text-gray-200 leading-relaxed whitespace-pre-wrap">
-              {pattern.brief || 'No brief available'}
-            </div>
-          </div>
-        </div>
+        )}
 
         {/* Collapsible Voicing Section */}
-        <div className="mb-6">
-          <button
-            onClick={() => setVoicingOpen(!voicingOpen)}
-            className="w-full bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10 hover:bg-white/10 transition-all flex items-center justify-between group"
-          >
-            <h2 className="text-2xl font-semibold text-emerald-300">Voicing</h2>
-            {voicingOpen ? (
-              <ChevronUp className="w-6 h-6 text-emerald-300 group-hover:scale-110 transition-transform" />
-            ) : (
-              <ChevronDown className="w-6 h-6 text-emerald-300 group-hover:scale-110 transition-transform" />
-            )}
-          </button>
-          
-          {voicingOpen && (
-            <div className="mt-4 bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10">
-              <div className="text-gray-200 leading-relaxed whitespace-pre-wrap font-mono text-sm">
-                {pattern.voicing || 'No voicing available'}
+        {pattern.voicing && (
+          <div className="mb-6">
+            <button
+              onClick={() => setVoicingOpen(!voicingOpen)}
+              className="w-full bg-[#1a1f2e]/60 backdrop-blur-sm rounded-2xl p-8 border border-[#7c4dff]/20 hover:border-[#7c4dff]/40 hover:bg-[#1a1f2e]/80 transition-all flex items-center justify-between group shadow-lg shadow-[#7c4dff]/5"
+            >
+              <h2 className="text-3xl font-serif font-semibold text-[#7c4dff]">Voicing</h2>
+              {voicingOpen ? (
+                <ChevronUp className="w-7 h-7 text-[#7c4dff] group-hover:scale-110 transition-transform" />
+              ) : (
+                <ChevronDown className="w-7 h-7 text-[#7c4dff] group-hover:scale-110 transition-transform" />
+              )}
+            </button>
+            
+            {voicingOpen && (
+              <div className="mt-4 bg-[#1a1f2e]/60 backdrop-blur-sm rounded-2xl p-10 border border-[#7c4dff]/20 shadow-lg shadow-[#7c4dff]/5">
+                <div className="text-gray-300 leading-relaxed whitespace-pre-wrap font-mono text-sm">
+                  {pattern.voicing}
+                </div>
               </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
 
         {/* Collapsible Layers Section */}
-        <div className="mb-12">
-          <button
-            onClick={() => setLayersOpen(!layersOpen)}
-            className="w-full bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10 hover:bg-white/10 transition-all flex items-center justify-between group"
-          >
-            <h2 className="text-2xl font-semibold text-amber-300">Layers</h2>
-            {layersOpen ? (
-              <ChevronUp className="w-6 h-6 text-amber-300 group-hover:scale-110 transition-transform" />
-            ) : (
-              <ChevronDown className="w-6 h-6 text-amber-300 group-hover:scale-110 transition-transform" />
-            )}
-          </button>
-          
-          {layersOpen && (
-            <div className="mt-4 bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10">
-              <div className="text-gray-200 leading-relaxed whitespace-pre-wrap font-mono text-sm">
-                {pattern.layers || 'No layers available'}
+        {pattern.layers && (
+          <div className="mb-12">
+            <button
+              onClick={() => setLayersOpen(!layersOpen)}
+              className="w-full bg-[#1a1f2e]/60 backdrop-blur-sm rounded-2xl p-8 border border-[#00e5a0]/20 hover:border-[#00e5a0]/40 hover:bg-[#1a1f2e]/80 transition-all flex items-center justify-between group shadow-lg shadow-[#00e5a0]/5"
+            >
+              <h2 className="text-3xl font-serif font-semibold text-[#00e5a0]">Layers</h2>
+              {layersOpen ? (
+                <ChevronUp className="w-7 h-7 text-[#00e5a0] group-hover:scale-110 transition-transform" />
+              ) : (
+                <ChevronDown className="w-7 h-7 text-[#00e5a0] group-hover:scale-110 transition-transform" />
+              )}
+            </button>
+            
+            {layersOpen && (
+              <div className="mt-4 bg-[#1a1f2e]/60 backdrop-blur-sm rounded-2xl p-10 border border-[#00e5a0]/20 shadow-lg shadow-[#00e5a0]/5">
+                <div className="text-gray-300 leading-relaxed whitespace-pre-wrap font-mono text-sm">
+                  {pattern.layers}
+                </div>
               </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
 
         {/* Share URL */}
-        <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
-          <div className="flex items-center justify-between">
+        <div className="bg-[#1a1f2e]/60 backdrop-blur-sm rounded-2xl p-8 border border-[#00f0ff]/20 shadow-lg shadow-[#00f0ff]/5">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-              <p className="text-gray-400 text-sm mb-1">Share this pattern</p>
-              <p className="text-white font-mono text-lg">GiveVoice.to/{pattern.word}</p>
+              <p className="text-gray-400 text-sm mb-2 font-sans">Share this pattern</p>
+              <p className="text-[#00f0ff] font-mono text-lg md:text-xl">GiveVoice.to/{pattern.word}</p>
             </div>
             <button
               onClick={() => {
                 navigator.clipboard.writeText(`GiveVoice.to/${pattern.word}`);
                 alert('URL copied to clipboard!');
               }}
-              className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-all"
+              className="px-8 py-3 bg-[#00f0ff] hover:bg-[#00f0ff]/90 text-[#0d1117] font-sans font-semibold rounded-lg transition-all shadow-lg shadow-[#00f0ff]/20 hover:shadow-[#00f0ff]/40"
             >
               Copy Link
             </button>
@@ -209,12 +215,12 @@ export default function PatternDetail() {
       {/* Fullscreen Image Modal */}
       {fullscreenImage && pattern.image_url && (
         <div 
-          className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4"
+          className="fixed inset-0 z-50 bg-[#0d1117]/98 flex items-center justify-center p-4"
           onClick={() => setFullscreenImage(false)}
         >
           <button
             onClick={() => setFullscreenImage(false)}
-            className="absolute top-6 right-6 p-3 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-lg text-white transition-all"
+            className="absolute top-6 right-6 p-3 bg-[#1a1f2e]/80 hover:bg-[#1a1f2e] backdrop-blur-sm rounded-lg text-[#00f0ff] transition-all border border-[#00f0ff]/20"
             title="Close fullscreen"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
