@@ -1,14 +1,15 @@
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ChevronDown, ChevronUp, ArrowLeft, Maximize2 } from 'lucide-react';
 
 interface Pattern {
   word: string;
   image_url?: string;
-  essence?: string;
-  brief?: string;
-  voicing?: string;
-  layers?: string;
+  verbal_essence?: string;
+  visual_essence?: string;
+  verbal_layer?: string;
+  verbal_voicing?: string;
+  visual_layer?: string;
   created_at?: string;
 }
 
@@ -18,7 +19,8 @@ export default function PatternDetail() {
   const [pattern, setPattern] = useState<Pattern | null>(null);
   const [loading, setLoading] = useState(true);
   const [voicingOpen, setVoicingOpen] = useState(false);
-  const [layersOpen, setLayersOpen] = useState(false);
+  const [verbalLayerOpen, setVerbalLayerOpen] = useState(false);
+  const [visualLayerOpen, setVisualLayerOpen] = useState(false);
   const [fullscreenImage, setFullscreenImage] = useState(false);
   
   console.log('PatternDetail mounted, word:', word);
@@ -37,14 +39,15 @@ export default function PatternDetail() {
         const data = await response.json();
         console.log('Pattern data received:', data);
         
-        // API returns flat structure, use directly
+        // Handle both old and new API formats
         const transformedPattern: Pattern = {
           word: data.word || word,
           image_url: data.image_url,
-          essence: data.essence,
-          brief: data.brief,
-          voicing: data.voicing,
-          layers: data.layers,
+          verbal_essence: data.verbal_essence || data.essence, // fallback to old field
+          visual_essence: data.visual_essence || data.brief, // fallback to old field
+          verbal_layer: data.verbal_layer || data.layers, // fallback to old field
+          verbal_voicing: data.verbal_voicing || data.voicing, // fallback to old field
+          visual_layer: data.visual_layer,
           created_at: data.created_at
         };
         
@@ -88,7 +91,7 @@ export default function PatternDetail() {
         </button>
       </div>
 
-      {/* Hero Section - Full Width Image with Word and Verbal Essence Overlay */}
+      {/* Hero Section - Full Width Image with Word Overlay */}
       <div className="relative w-full h-[70vh] min-h-[600px] overflow-hidden">
         {pattern.image_url ? (
           <>
@@ -113,79 +116,109 @@ export default function PatternDetail() {
           <div className="w-full h-full bg-gradient-to-br from-[#7c4dff] to-[#00f0ff]" />
         )}
         
-        {/* Word and Verbal Essence Overlay */}
+        {/* Word Overlay */}
         <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center">
-          <h1 className="text-7xl md:text-9xl font-serif font-semibold text-white drop-shadow-2xl tracking-tight mb-8">
+          <h1 className="text-7xl md:text-9xl font-serif font-semibold text-white drop-shadow-2xl tracking-tight">
             {pattern.word}
           </h1>
-          
-          {/* Verbal Essence in Overlay */}
-          {pattern.essence && (
-            <div className="max-w-3xl mx-auto">
-              <p className="text-xl md:text-2xl text-white/95 leading-relaxed font-sans drop-shadow-lg">
-                {pattern.essence}
-              </p>
-            </div>
-          )}
         </div>
       </div>
 
       {/* Main Content */}
       <div className="max-w-6xl mx-auto px-6 py-16">
-        {/* Visual Essence (Brief) - Full Width */}
-        {pattern.brief && (
-          <div className="mb-12 bg-[#1a1f2e]/60 backdrop-blur-sm rounded-2xl p-10 border border-[#00f0ff]/20 shadow-lg shadow-[#00f0ff]/5">
-            <h2 className="text-3xl font-serif font-semibold text-[#00f0ff] mb-6">Visual Essence</h2>
-            <div className="text-gray-300 text-lg leading-relaxed whitespace-pre-wrap font-sans">
-              {pattern.brief}
+        
+        {/* Dual Essences - Side by Side */}
+        <div className="grid md:grid-cols-2 gap-8 mb-12">
+          {/* Verbal Essence */}
+          {pattern.verbal_essence && (
+            <div className="bg-[#1a1f2e]/60 backdrop-blur-sm rounded-2xl p-8 border border-[#00f0ff]/30 shadow-lg shadow-[#00f0ff]/10">
+              <h2 className="text-2xl font-serif font-semibold text-[#00f0ff] mb-4">Verbal Essence</h2>
+              <p className="text-gray-200 text-lg leading-relaxed font-sans">
+                {pattern.verbal_essence}
+              </p>
             </div>
-          </div>
-        )}
+          )}
+          
+          {/* Visual Essence */}
+          {pattern.visual_essence && (
+            <div className="bg-[#1a1f2e]/60 backdrop-blur-sm rounded-2xl p-8 border border-[#7c4dff]/30 shadow-lg shadow-[#7c4dff]/10">
+              <h2 className="text-2xl font-serif font-semibold text-[#7c4dff]">Visual Essence</h2>
+              <p className="text-gray-200 text-lg leading-relaxed font-sans">
+                {pattern.visual_essence}
+              </p>
+            </div>
+          )}
+        </div>
 
         {/* Collapsible Voicing Section */}
-        {pattern.voicing && (
+        {pattern.verbal_voicing && (
           <div className="mb-6">
             <button
               onClick={() => setVoicingOpen(!voicingOpen)}
-              className="w-full bg-[#1a1f2e]/60 backdrop-blur-sm rounded-2xl p-8 border border-[#7c4dff]/20 hover:border-[#7c4dff]/40 hover:bg-[#1a1f2e]/80 transition-all flex items-center justify-between group shadow-lg shadow-[#7c4dff]/5"
+              className="w-full bg-[#1a1f2e]/60 backdrop-blur-sm rounded-2xl p-8 border border-[#00f0ff]/20 hover:border-[#00f0ff]/40 hover:bg-[#1a1f2e]/80 transition-all flex items-center justify-between group shadow-lg shadow-[#00f0ff]/5"
             >
-              <h2 className="text-3xl font-serif font-semibold text-[#7c4dff]">Voicing</h2>
+              <h2 className="text-3xl font-serif font-semibold text-[#00f0ff]">Voicing</h2>
               {voicingOpen ? (
-                <ChevronUp className="w-7 h-7 text-[#7c4dff] group-hover:scale-110 transition-transform" />
+                <ChevronUp className="w-7 h-7 text-[#00f0ff] group-hover:scale-110 transition-transform" />
               ) : (
-                <ChevronDown className="w-7 h-7 text-[#7c4dff] group-hover:scale-110 transition-transform" />
+                <ChevronDown className="w-7 h-7 text-[#00f0ff] group-hover:scale-110 transition-transform" />
               )}
             </button>
             
             {voicingOpen && (
-              <div className="mt-4 bg-[#1a1f2e]/60 backdrop-blur-sm rounded-2xl p-10 border border-[#7c4dff]/20 shadow-lg shadow-[#7c4dff]/5">
+              <div className="mt-4 bg-[#1a1f2e]/60 backdrop-blur-sm rounded-2xl p-10 border border-[#00f0ff]/20 shadow-lg shadow-[#00f0ff]/5">
                 <div className="text-gray-300 leading-relaxed whitespace-pre-wrap font-mono text-sm">
-                  {pattern.voicing}
+                  {pattern.verbal_voicing}
                 </div>
               </div>
             )}
           </div>
         )}
 
-        {/* Collapsible Layers Section */}
-        {pattern.layers && (
-          <div className="mb-12">
+        {/* Collapsible Verbal Layer Section */}
+        {pattern.verbal_layer && (
+          <div className="mb-6">
             <button
-              onClick={() => setLayersOpen(!layersOpen)}
+              onClick={() => setVerbalLayerOpen(!verbalLayerOpen)}
               className="w-full bg-[#1a1f2e]/60 backdrop-blur-sm rounded-2xl p-8 border border-[#00e5a0]/20 hover:border-[#00e5a0]/40 hover:bg-[#1a1f2e]/80 transition-all flex items-center justify-between group shadow-lg shadow-[#00e5a0]/5"
             >
-              <h2 className="text-3xl font-serif font-semibold text-[#00e5a0]">Layers</h2>
-              {layersOpen ? (
+              <h2 className="text-3xl font-serif font-semibold text-[#00e5a0]">Verbal Layers</h2>
+              {verbalLayerOpen ? (
                 <ChevronUp className="w-7 h-7 text-[#00e5a0] group-hover:scale-110 transition-transform" />
               ) : (
                 <ChevronDown className="w-7 h-7 text-[#00e5a0] group-hover:scale-110 transition-transform" />
               )}
             </button>
             
-            {layersOpen && (
+            {verbalLayerOpen && (
               <div className="mt-4 bg-[#1a1f2e]/60 backdrop-blur-sm rounded-2xl p-10 border border-[#00e5a0]/20 shadow-lg shadow-[#00e5a0]/5">
                 <div className="text-gray-300 leading-relaxed whitespace-pre-wrap font-mono text-sm">
-                  {pattern.layers}
+                  {pattern.verbal_layer}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Collapsible Visual Layer Section */}
+        {pattern.visual_layer && (
+          <div className="mb-12">
+            <button
+              onClick={() => setVisualLayerOpen(!visualLayerOpen)}
+              className="w-full bg-[#1a1f2e]/60 backdrop-blur-sm rounded-2xl p-8 border border-[#7c4dff]/20 hover:border-[#7c4dff]/40 hover:bg-[#1a1f2e]/80 transition-all flex items-center justify-between group shadow-lg shadow-[#7c4dff]/5"
+            >
+              <h2 className="text-3xl font-serif font-semibold text-[#7c4dff]">Visual Layers</h2>
+              {visualLayerOpen ? (
+                <ChevronUp className="w-7 h-7 text-[#7c4dff] group-hover:scale-110 transition-transform" />
+              ) : (
+                <ChevronDown className="w-7 h-7 text-[#7c4dff] group-hover:scale-110 transition-transform" />
+              )}
+            </button>
+            
+            {visualLayerOpen && (
+              <div className="mt-4 bg-[#1a1f2e]/60 backdrop-blur-sm rounded-2xl p-10 border border-[#7c4dff]/20 shadow-lg shadow-[#7c4dff]/5">
+                <div className="text-gray-300 leading-relaxed whitespace-pre-wrap font-mono text-sm">
+                  {pattern.visual_layer}
                 </div>
               </div>
             )}
@@ -201,10 +234,9 @@ export default function PatternDetail() {
             </div>
             <button
               onClick={() => {
-                navigator.clipboard.writeText(`GiveVoice.to/${pattern.word}`);
-                alert('URL copied to clipboard!');
+                navigator.clipboard.writeText(`https://GiveVoice.to/${pattern.word}`);
               }}
-              className="px-8 py-3 bg-[#00f0ff] hover:bg-[#00f0ff]/90 text-[#0d1117] font-sans font-semibold rounded-lg transition-all shadow-lg shadow-[#00f0ff]/20 hover:shadow-[#00f0ff]/40"
+              className="px-6 py-3 bg-[#00f0ff]/10 hover:bg-[#00f0ff]/20 border border-[#00f0ff]/30 hover:border-[#00f0ff]/50 rounded-lg text-[#00f0ff] font-sans transition-all"
             >
               Copy Link
             </button>
@@ -214,14 +246,13 @@ export default function PatternDetail() {
 
       {/* Fullscreen Image Modal */}
       {fullscreenImage && pattern.image_url && (
-        <div 
-          className="fixed inset-0 z-50 bg-[#0d1117]/98 flex items-center justify-center p-4"
+        <div
+          className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4"
           onClick={() => setFullscreenImage(false)}
         >
           <button
+            className="absolute top-6 right-6 p-3 bg-white/10 hover:bg-white/20 rounded-lg text-white transition-all"
             onClick={() => setFullscreenImage(false)}
-            className="absolute top-6 right-6 p-3 bg-[#1a1f2e]/80 hover:bg-[#1a1f2e] backdrop-blur-sm rounded-lg text-[#00f0ff] transition-all border border-[#00f0ff]/20"
-            title="Close fullscreen"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
