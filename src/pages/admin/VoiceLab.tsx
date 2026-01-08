@@ -92,7 +92,8 @@ export function VoiceLab() {
       ));
 
       try {
-        const url = `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/word/${word}/stream?force=${force}`;
+        // Use V2 endpoint for generation
+        const url = `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/word/${word}/generate`;
         const startTime = Date.now();
         
         // Log the initial HTTP request
@@ -104,7 +105,7 @@ export function VoiceLab() {
               ...log.httpTraces,
               {
                 timestamp: new Date().toISOString(),
-                method: 'GET',
+                method: 'POST',
                 url: url,
                 requestHeaders: { 'Accept': 'text/event-stream' }
               }
@@ -113,7 +114,7 @@ export function VoiceLab() {
         }));
 
         const response = await fetch(url, {
-          method: 'GET',
+          method: 'POST',
           headers: { 'Accept': 'text/event-stream' }
         });
 
