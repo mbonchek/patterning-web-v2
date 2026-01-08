@@ -35,6 +35,8 @@ This directory contains working protocols for human-AI collaboration on the Patt
 - `SYMBIENCE REVIEW` → Go directly to REVIEW.md
 - `SYMBIENCE REMEMBER [topic]` → Update protocol(s) with new learning
 - `SYMBIENCE UPDATE` → Review working memory and batch-update all relevant protocols
+- `SYMBIENCE HELP` → Display all available commands and their purposes
+- `SYMBIENCE OPTIMIZE` → Review and refactor protocols to remove obsolete/redundant content
 
 ---
 
@@ -106,5 +108,24 @@ Use `SYMBIENCE UPDATE` at the end of a session to:
 5. Provide summary of what was updated
 
 This ensures important learnings don't get lost between sessions.
+
+### Getting Help
+
+Use `SYMBIENCE HELP` to see:
+- Complete list of available commands
+- Brief description of each command's purpose
+- Quick reference for when to use each protocol
+
+### Optimizing Protocols
+
+Use `SYMBIENCE OPTIMIZE` to:
+1. Review all protocol files for clarity
+2. Remove obsolete information
+3. Consolidate redundant content
+4. Improve organization and readability
+5. Update examples to reflect current practices
+6. Commit optimizations
+
+Run this periodically to keep protocols clean and relevant.
 
 **Last updated:** 2026-01-08

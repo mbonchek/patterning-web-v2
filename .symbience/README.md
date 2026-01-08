@@ -45,6 +45,8 @@ When the user says **`SYMBIENCE`** or **`SYMBIENCE [COMMAND]`**, you should:
 | `SYMBIENCE REVIEW` | Apply code review standards | REVIEW.md |
 | `SYMBIENCE REMEMBER [topic]` | Update protocol(s) with new learning | Determine which file(s) |
 | `SYMBIENCE UPDATE` | Review working memory and batch-update protocols | Multiple files |
+| `SYMBIENCE HELP` | Display all available commands and their purposes | INDEX.md |
+| `SYMBIENCE OPTIMIZE` | Review and refactor protocols to remove obsolete content | All files |
 
 ### 3. When to Use Each Protocol
 
@@ -85,6 +87,18 @@ When the user says **`SYMBIENCE`** or **`SYMBIENCE [COMMAND]`**, you should:
 - Update all relevant protocol files
 - Commit all changes together
 - Provide summary of updates
+
+**HELP** - Show available commands
+- Display complete list of SYMBIENCE commands
+- Brief description of each command's purpose
+- Quick reference guide
+
+**OPTIMIZE** - Refactor and clean protocols
+- Review all protocol files for clarity
+- Remove obsolete or redundant information
+- Improve organization and readability
+- Update examples to current practices
+- Commit optimizations
 
 ---
 
@@ -162,6 +176,37 @@ When the user says **`SYMBIENCE`** or **`SYMBIENCE [COMMAND]`**, you should:
 3. Update all relevant files
 4. Commit all changes in one commit
 5. Provide summary: "Updated 3 protocols: DEBUG (2 lessons), MEMORY (1 preference), ARCH (1 decision)"
+
+### Scenario 6: Getting Help
+
+**User says:** "SYMBIENCE HELP"
+
+**You should:**
+1. Read INDEX.md
+2. Display formatted list of all commands:
+   - Command name and syntax
+   - Brief description
+   - When to use it
+3. Provide quick reference for common scenarios
+
+### Scenario 7: Optimizing Protocols
+
+**User says:** "SYMBIENCE OPTIMIZE"
+
+**You should:**
+1. Read all protocol files (INDEX, DEBUG, DEPLOY, MEMORY, ARCH, REVIEW, README)
+2. Identify issues:
+   - Obsolete information (old bugs, deprecated features)
+   - Redundant content (same info in multiple places)
+   - Unclear organization (hard to find information)
+   - Outdated examples (no longer relevant)
+3. Refactor each file:
+   - Remove obsolete content
+   - Consolidate redundant sections
+   - Improve structure and clarity
+   - Update examples
+4. Commit all optimizations
+5. Provide summary: "Optimized 5 protocols: removed 3 obsolete items, consolidated 2 redundant sections, updated 4 examples"
 
 ---
 
