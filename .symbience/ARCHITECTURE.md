@@ -236,6 +236,76 @@ created_at: timestamp
 
 ---
 
+## Image Generation System
+
+### Overview
+
+Image generation uses **Gemini** (`gemini-3-pro-image-preview`), NOT DALL-E or other providers. This is a critical detail for debugging and development.
+
+### How It Works
+
+**Step 6 (word_visual_image)** is different from other steps:
+- Steps 1-5: Use Claude for text generation
+- Step 6: Uses Gemini for image generation
+
+**The visual_essence (from step 5) becomes the image prompt for Gemini.**
+
+### Code Locations
+
+**Backend (patterning-api-v2):**
+
+1. **Main generation pipeline:** `services/ai_service.py`
+   - `generate_image()` method (line ~499)
+   - Uses `gemini-3-pro-image-preview` model
+   - Takes brief, word, and essence as inputs
+
+2. **Streaming generation:** `services/word_pattern_generator.py`
+   - `_generate_image_stream()` method (line ~251)
+   - Handles real-time image generation with progress updates
+
+3. **Playground testing:** `services/playground_service.py`
+   - `test_image_prompt()` method (line ~59)
+   - For testing image prompts in the prompt editor
+
+4. **API endpoint:** `api/routes.py`
+   - `/generate-image` endpoint (line ~79)
+   - Calls `service.generate_image()`
+
+### Image Generation Flow
+
+```
+visual_essence (text) 
+    → Gemini gemini-3-pro-image-preview
+    → Image bytes
+    → Upload to Supabase storage
+    → Generate thumbnail
+    → Store URLs in visual_image table
+```
+
+### Prompt Editor Behavior
+
+**IMPORTANT:** The prompt editor playground for `word_visual_image` should NOT generate SVG code. If it's outputting SVG, it means:
+- The prompt template is wrong (asking for SVG instead of being an image prompt)
+- Or the playground is calling text generation instead of image generation
+
+**Correct behavior:** The playground should call the image generation API and display the resulting image, not generate text/SVG.
+
+### Model Details
+
+- **Model:** `gemini-3-pro-image-preview`
+- **Aspect ratio:** 16:9 (1600x900)
+- **Output:** PNG image bytes
+- **Cost:** Currently free (preview)
+
+### Thumbnails
+
+- Generated automatically after image creation
+- Size: 200x200 pixels
+- Quality: 85%
+- Stored in Supabase alongside full image
+
+---
+
 ## Performance Considerations
 
 ### Database Queries
