@@ -165,6 +165,10 @@ export function PromptEditor() {
   const handleLoadTestData = (pattern: any) => {
     if (!pattern) return;
     
+    console.log('Loading test data from pattern:', pattern);
+    console.log('Pattern verbal_essence:', pattern.verbal_essence);
+    console.log('Pattern verbal_voicing:', pattern.verbal_voicing);
+    
     const newInputs = { ...testInputs };
     
     // Intelligent mapping based on V2 schema and common variable names
@@ -191,9 +195,13 @@ export function PromptEditor() {
     detectedVars.forEach(v => {
       if (mappings[v]) {
         newInputs[v] = mappings[v];
+        console.log(`Mapped ${v} = ${mappings[v]?.substring(0, 50)}...`);
+      } else {
+        console.log(`No mapping found for variable: ${v}`);
       }
     });
     
+    console.log('Final test inputs:', newInputs);
     setTestInputs(newInputs);
   };
 
