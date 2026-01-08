@@ -196,7 +196,9 @@ export function PromptEditor() {
         const allRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/admin/prompts`);
         const allPrompts = await allRes.json();
         const active = allPrompts.find((p: Prompt) => p.slug === data.slug && p.is_active);
-        if (active && active.id !== data.id) {
+        if (active) {
+          // Always set activePrompt for comparison, even if it's the same version
+          // This allows comparing your draft changes against the saved active version
           setActivePrompt(active);
         }
 
