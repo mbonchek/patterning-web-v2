@@ -68,6 +68,8 @@ export function PromptEditor() {
   const [isSearching, setIsSearching] = useState(false);
   const [testError, setTestError] = useState<string | null>(null);
   const [detectedVars, setDetectedVars] = useState<string[]>([]);
+  const [httpTrace, setHttpTrace] = useState<{request: any, response: any} | null>(null);
+  const [showTrace, setShowTrace] = useState(false);
 
   // Save Dialog State
   const [showSaveDialog, setShowSaveDialog] = useState(false);
@@ -163,6 +165,7 @@ export function PromptEditor() {
     // Intelligent mapping based on V2 schema and common variable names
     const mappings: Record<string, any> = {
       word: pattern.word || pattern.seed?.text,
+      seed: pattern.seed?.text,
       input: pattern.word || pattern.seed?.text,
       voicing: pattern.verbal_voicing?.content || pattern.voicing,
       word_voicing: pattern.verbal_voicing?.content || pattern.voicing,
@@ -413,19 +416,38 @@ export function PromptEditor() {
         max_tokens: activePrompt?.max_tokens
       } : config;
 
+      const requestBody = {
+        template: targetTemplate,
+        inputs: testInputs,
+        config: targetConfig,
+        slug: prompt?.slug || ''
+      };
+
+      // Capture HTTP trace
+      if (!useActive) {
+        setHttpTrace({
+          request: {
+            method: 'POST',
+            url: '/api/admin/generate',
+            body: requestBody
+          },
+          response: null
+        });
+      }
+
       const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/admin/generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          template: targetTemplate,
-          inputs: testInputs,
-          config: targetConfig,
-          slug: prompt?.slug || ''
-        })
+        body: JSON.stringify(requestBody)
       });
 
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || 'Generation failed');
+      
+      // Capture response trace
+      if (!useActive) {
+        setHttpTrace(prev => prev ? {...prev, response: result} : null);
+      }
       
       if (useActive) setActiveOutput(result.output); else setTestOutput(result.output);
     } catch (err: any) {
@@ -699,6 +721,35 @@ export function PromptEditor() {
                 <div className="mb-4 p-3 bg-red-900/20 border border-red-900/50 rounded text-red-400 text-xs flex items-start gap-2">
                   <AlertCircle size={14} className="mt-0.5 shrink-0" />
                   <pre className="whitespace-pre-wrap font-sans">{testError}</pre>
+                </div>
+              )}
+
+              {/* HTTP Trace Toggle */}
+              {httpTrace && (
+                <button
+                  onClick={() => setShowTrace(!showTrace)}
+                  className="mb-2 px-3 py-1 bg-slate-900 border border-slate-700 rounded text-[10px] text-slate-400 hover:text-white hover:border-teal-500 transition-all flex items-center gap-2 w-fit"
+                >
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                  </svg>
+                  {showTrace ? 'Hide' : 'Show'} HTTP Trace
+                </button>
+              )}
+
+              {/* HTTP Trace Panel */}
+              {showTrace && httpTrace && (
+                <div className="mb-4 bg-slate-950 border border-slate-800 rounded p-3 text-[10px] font-mono max-h-64 overflow-y-auto">
+                  <div className="mb-3">
+                    <div className="text-teal-400 font-bold mb-1">REQUEST</div>
+                    <pre className="text-slate-400 whitespace-pre-wrap">{JSON.stringify(httpTrace.request, null, 2)}</pre>
+                  </div>
+                  {httpTrace.response && (
+                    <div>
+                      <div className="text-blue-400 font-bold mb-1">RESPONSE</div>
+                      <pre className="text-slate-400 whitespace-pre-wrap">{JSON.stringify(httpTrace.response, null, 2)}</pre>
+                    </div>
+                  )}
                 </div>
               )}
 
