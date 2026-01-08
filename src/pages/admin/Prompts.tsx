@@ -107,13 +107,8 @@ export function Prompts() {
     return {};
   };
 
-  const getVariantTag = (version: number, config: any) => {
-    let tag = `v${version}`;
-    if (config.temperature !== undefined) tag += `.t${Math.round(config.temperature * 100)}`;
-    if (config.top_p !== undefined) tag += `.p${Math.round(config.top_p * 100)}`;
-    if (config.top_k !== undefined) tag += `.k${config.top_k}`;
-    if (config.max_tokens !== undefined) tag += `.n${config.max_tokens}`;
-    return tag;
+  const getVariantTag = (version: number) => {
+    return `v${version}`;
   };
 
   return (
@@ -193,17 +188,16 @@ export function Prompts() {
     // Pluralize "layer" to "layers"
     if (displayName === 'layer') displayName = 'layers';
 
-    // Hardcoded variable mapping (more reliable than database field)
-    const variableMap: Record<string, string[]> = {
-      'system': ['context'],
-      'word_verbal_layer': ['word', 'seed'],
-      'word_verbal_voicing': ['word', 'verbal_layer'],
-      'word_verbal_essence': ['word', 'verbal_voicing'],
-      'word_visual_layer': ['word', 'verbal_essence', 'verbal_voicing'],
-      'word_visual_essence': ['word', 'visual_layer'],
-      'word_visual_brief': ['word', 'visual_essence']
+    // Input and output variable mapping
+    const inputOutputMap: Record<string, { inputs: string[], output: string | null }> = {
+      'system': { inputs: [], output: null }, // System prompt has no variables to display
+      'word_verbal_layer': { inputs: ['word', 'seed'], output: 'verbal_layer' },
+      'word_verbal_voicing': { inputs: ['word', 'verbal_layer'], output: 'verbal_voicing' },
+      'word_verbal_essence': { inputs: ['word', 'verbal_voicing'], output: 'verbal_essence' },
+      'word_visual_layer': { inputs: ['word', 'verbal_essence', 'verbal_voicing'], output: 'visual_layer' },
+      'word_visual_essence': { inputs: ['word', 'visual_layer'], output: 'visual_essence' }
     };
-    const variables = variableMap[slug] || activeVersion.input_variables || [];
+    const varInfo = inputOutputMap[slug] || { inputs: activeVersion.input_variables || [], output: null };
 
     return (
                 <div key={slug} className="bg-slate-900/30 border border-slate-800 rounded-xl overflow-hidden">
@@ -221,13 +215,21 @@ export function Prompts() {
                         <h2 className="text-xl font-bold text-white font-serif capitalize tracking-wide leading-none mb-1">
                           {displayName}
                         </h2>
-                        {variables.length > 0 && (
-                          <div className="flex gap-1.5">
-                            {variables.map(v => (
-                              <span key={v} className="text-[10px] font-mono text-slate-400 bg-slate-900 px-1.5 py-0.5 rounded border border-slate-800">
+                        {(varInfo.inputs.length > 0 || varInfo.output) && (
+                          <div className="flex items-center gap-1.5 text-[10px] font-mono">
+                            {varInfo.inputs.map(v => (
+                              <span key={v} className="text-slate-400 bg-slate-900 px-1.5 py-0.5 rounded border border-slate-800">
                                 {'{'}{v}{'}'}
                               </span>
                             ))}
+                            {varInfo.output && (
+                              <>
+                                <span className="text-slate-600">→</span>
+                                <span className="text-teal-400 bg-teal-950/30 px-1.5 py-0.5 rounded border border-teal-900/50 font-semibold">
+                                  {varInfo.output}
+                                </span>
+                              </>
+                            )}
                           </div>
                         )}
                       </div>
@@ -266,7 +268,7 @@ export function Prompts() {
                                 className="w-full text-left block px-4 py-2 hover:bg-slate-800 border-l-2 border-transparent hover:border-slate-600"
                               >
                                 <div className="flex justify-between items-center">
-                                  <span className="text-xs text-slate-400 font-mono">{getVariantTag(h.version, parseConfig(h))}</span>
+                                  <span className="text-xs text-slate-400 font-mono">{getVariantTag(h.version)}</span>
                                   <span className="text-[10px] text-slate-600">{formatDate(h.created_at)}</span>
                                 </div>
                               </button>
@@ -294,7 +296,7 @@ export function Prompts() {
                       <div className="flex items-center gap-3">
                         <span className="text-xs font-bold text-teal-400 flex items-center gap-1.5 bg-teal-950/50 px-2 py-1 rounded border border-teal-900/50 font-mono">
                           <CheckCircle size={12} /> 
-                          {getVariantTag(activeVersion.version, parseConfig(activeVersion))}
+                          {getVariantTag(activeVersion.version)}
                         </span>
                         
                         {/* Config Badges */}

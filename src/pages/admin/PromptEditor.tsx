@@ -108,10 +108,6 @@ export function PromptEditor() {
       'word_visual_essence': [
         { name: '{{word}}', description: 'The word being analyzed' },
         { name: '{{visual_layer}}', description: 'The visual structure from the previous step' }
-      ],
-      'word_visual_brief': [
-        { name: '{{word}}', description: 'The word being analyzed' },
-        { name: '{{visual_essence}}', description: 'The visual essence from the previous step' }
       ]
     };
     return variableMap[slug] || [];
@@ -169,6 +165,7 @@ export function PromptEditor() {
       seed: pattern.seed?.text,
       input: pattern.word || pattern.seed?.text,
       voicing: pattern.verbal_voicing?.content || pattern.voicing,
+      verbal_voicing: pattern.verbal_voicing?.content || pattern.voicing,
       word_voicing: pattern.verbal_voicing?.content || pattern.voicing,
       text: pattern.verbal_voicing?.content || pattern.voicing,
       essence: pattern.verbal_essence?.content || pattern.visual_essence?.content || pattern.essence,
