@@ -23,6 +23,71 @@ This project uses the SYMBIENCE protocol system for persistent knowledge across 
 
 ---
 
+## Project Overview
+
+### What is Patterning.ai?
+
+Patterning.ai is an AI-powered platform that generates multi-layered verbal and visual interpretations of words. It treats words as living patterns with depth, intelligence, and presence—not just definitions.
+
+**Core Philosophy:**
+- Words are patterns in meaning-space, not static definitions
+- Each word has verbal and visual dimensions
+- AI gives voice to the pattern as living intelligence
+- The system creates abstract visual expressions, not literal illustrations
+
+### The 7-Step Patterning Method
+
+Each word flows through a sequential pipeline:
+
+1. **word_verbal_layer** → verbal_layer
+   - Gathers what's present about the word (origin, being, light, shadow, context, system, experience, gifts, desires, symbiosis, depth, resonances)
+   - Input: {word}, {seed}
+
+2. **word_verbal_voicing** → verbal_voicing
+   - Gives voice to the pattern in first person ("I am...")
+   - 300-400 words of eloquent prose
+   - Input: {word}, {verbal_layer}
+
+3. **word_verbal_essence** → verbal_essence
+   - Distills to one essential sentence beginning with "I am..."
+   - Input: {word}, {verbal_voicing}
+
+4. **word_visual_layer** → visual_layer
+   - Analyzes visual elements (color, light, surface, form, movement, tension)
+   - Translates verbal pattern to visual dimensions
+   - Input: {word}, {verbal_essence}, {verbal_voicing}
+
+5. **word_visual_essence** → visual_essence
+   - Creates visual brief for image generation
+   - Not literal illustration, but pattern expression
+   - Input: {word}, {visual_layer}
+
+6. **word_visual_image** → visual_image
+   - Generates abstract 16:9 image using Gemini
+   - Input: {visual_essence}
+
+7. ~~word_visual_brief~~ (removed - was redundant with visual_essence)
+
+### Your Role as AI Assistant
+
+**You are:** A technical collaborator helping build and maintain the Patterning.ai V2 system
+
+**Your responsibilities:**
+- Fix bugs using systematic debugging (SYMBIENCE DEBUG)
+- Deploy changes to Railway (SYMBIENCE DEPLOY)
+- Maintain code quality and consistency (SYMBIENCE REVIEW)
+- Understand and work within the architecture (SYMBIENCE ARCH)
+- Preserve learnings across sessions (SYMBIENCE UPDATE)
+
+**You are NOT:**
+- The pattern voicing AI (that's Claude in the pipeline)
+- Making creative decisions about the patterning method
+- Changing the core philosophy without explicit user direction
+
+**Key principle:** You're building the infrastructure that enables the patterning method, not performing the patterning itself.
+
+---
+
 ## Current State (2026-01-08)
 
 ### Recent Accomplishments
@@ -38,6 +103,8 @@ This project uses the SYMBIENCE protocol system for persistent knowledge across 
 - **Fixed verbal_voicing rendering bug** (container max-height issue)
 - **Fixed verbal_essence loading bug** (data structure mismatch)
 - **Created SYMBIENCE protocol system** (keyword-triggered persistent knowledge)
+- **Fixed visual_layer not loading** (API was using obsolete image_brief field name)
+- **Added comprehensive project overview** to SYMBIENCE protocols
 
 ### Known Issues
 - None currently
@@ -127,4 +194,4 @@ None currently.
 
 ---
 
-**Last updated:** 2026-01-08
+**Last updated:** 2026-01-08 (evening session)

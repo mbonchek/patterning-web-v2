@@ -64,29 +64,120 @@ Each word goes through 7 generation steps, each producing a specific output:
 
 ## Database Schema (V2)
 
+### Overview
+
+The V2 schema is fully normalized with a registry pattern. Each word pattern is a record in `patterns_word` that links to component tables via foreign keys. This enables:
+- Efficient queries with joins
+- Component reusability
+- Clean separation of concerns
+- Version tracking per component
+
 ### Core Tables
 
-**patterns_word** (registry)
-- Main pattern registry
-- Links to all component tables via foreign keys
-- Single source of truth for a word's pattern
+**patterns_word** (registry table)
+```sql
+id: uuid (primary key)
+created_at: timestamp
+seed_id: uuid → seeds.id
+verbal_layer_id: uuid → verbal_layer.id
+verbal_voicing_id: uuid → verbal_voicing.id
+verbal_essence_id: uuid → verbal_essence.id
+visual_layer_id: uuid → visual_layer.id
+visual_essence_id: uuid → visual_essence.id
+visual_image_id: uuid → visual_image.id
+```
 
-**seeds**
-- Word text storage
-- Reusable across patterns
+**seeds** (word storage)
+```sql
+id: uuid (primary key)
+text: string (the word)
+created_at: timestamp
+```
 
-**verbal_layer, verbal_voicing, verbal_essence**
-- Verbal component outputs
-- Each has: content, prompt_version, timestamps
+**verbal_layer** (step 1 output)
+```sql
+id: uuid (primary key)
+content: text (semantic depth analysis)
+prompt_version: string (e.g., "2.1")
+created_at: timestamp
+```
 
-**visual_layer, visual_essence, visual_image**
-- Visual component outputs
-- visual_image includes: image_url, thumbnail_url
+**verbal_voicing** (step 2 output)
+```sql
+id: uuid (primary key)
+content: text (first-person voice, 300-400 words)
+prompt_version: string
+created_at: timestamp
+```
 
-**prompts**
-- Prompt templates and configurations
-- Versioned (semantic versioning: 1.0, 1.1, 2.0)
-- Tracks active versions
+**verbal_essence** (step 3 output)
+```sql
+id: uuid (primary key)
+content: text (one sentence, "I am...")
+prompt_version: string
+created_at: timestamp
+```
+
+**visual_layer** (step 4 output)
+```sql
+id: uuid (primary key)
+content: text (visual elements analysis)
+prompt_version: string
+created_at: timestamp
+```
+
+**visual_essence** (step 5 output)
+```sql
+id: uuid (primary key)
+content: text (visual brief for image generation)
+prompt_version: string
+created_at: timestamp
+```
+
+**visual_image** (step 6 output)
+```sql
+id: uuid (primary key)
+image_url: string (full resolution)
+thumbnail_url: string (optimized preview)
+prompt_version: string
+created_at: timestamp
+```
+
+**prompts** (prompt templates)
+```sql
+id: uuid (primary key)
+slug: string (e.g., "word_verbal_layer")
+version: numeric(8,2) (e.g., 2.1)
+template: text (prompt with {{variables}})
+description: text
+comment: text (git-style commit message)
+input_variables: string[] (detected variables)
+is_active: boolean (only one active per slug)
+temperature: float
+top_p: float
+top_k: integer
+max_tokens: integer
+created_at: timestamp
+```
+
+### Data Flow
+
+**Writing (generation):**
+1. Create seed (or reuse existing)
+2. Generate verbal_layer → insert into verbal_layer table
+3. Generate verbal_voicing → insert into verbal_voicing table
+4. Generate verbal_essence → insert into verbal_essence table
+5. Generate visual_layer → insert into visual_layer table
+6. Generate visual_essence → insert into visual_essence table
+7. Generate visual_image → insert into visual_image table
+8. Create patterns_word record linking all component IDs
+
+**Reading (history API):**
+1. Query patterns_word with LEFT JOINs to all component tables
+2. Flatten to: {word, layers, voicing, essence, visual_layer, visual_essence, image_url}
+3. Return flat structure for frontend
+
+**Key insight:** The API returns a flat structure for performance, but the database is fully normalized for data integrity.
 
 ---
 
