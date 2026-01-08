@@ -33,6 +33,7 @@ This directory contains working protocols for human-AI collaboration on the Patt
 - `SYMBIENCE MEMORY` → Go directly to WORKING-MEMORY.md
 - `SYMBIENCE ARCH` → Go directly to ARCHITECTURE.md
 - `SYMBIENCE REVIEW` → Go directly to REVIEW.md
+- `SYMBIENCE REMEMBER [topic]` → Update protocol(s) with new learning
 
 ---
 
@@ -78,5 +79,20 @@ Code review standards:
 ## Maintenance
 
 These protocols should be updated as we learn new patterns and discover better approaches. They are version-controlled in the repo and persist across sessions.
+
+### Updating Protocols
+
+Use `SYMBIENCE REMEMBER [topic]` to add new learnings:
+
+**Examples:**
+- `SYMBIENCE REMEMBER: User prefers dark mode for new features` → Updates WORKING-MEMORY.md
+- `SYMBIENCE REMEMBER: Always validate API keys before deployment` → Updates DEPLOY.md
+- `SYMBIENCE REMEMBER: The visual_layer prompt needs lighting context` → Updates ARCHITECTURE.md
+
+When triggered, I will:
+1. Determine which protocol file(s) to update
+2. Add the information in the appropriate section
+3. Commit the change to the repo
+4. Confirm what was added
 
 **Last updated:** 2026-01-08
