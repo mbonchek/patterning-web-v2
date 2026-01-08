@@ -102,7 +102,8 @@ export function PromptEditor() {
       ],
       'word_visual_layer': [
         { name: '{{word}}', description: 'The word being analyzed' },
-        { name: '{{verbal_essence}}', description: 'The distilled verbal essence from the previous step' }
+        { name: '{{verbal_essence}}', description: 'The distilled verbal essence from the previous step' },
+        { name: '{{verbal_voicing}}', description: 'The voiced interpretation for additional context' }
       ],
       'word_visual_essence': [
         { name: '{{word}}', description: 'The word being analyzed' },
@@ -236,11 +237,16 @@ export function PromptEditor() {
         // Also load the currently active version for comparison
         const allRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/admin/prompts`);
         const allPrompts = await allRes.json();
+        console.log('Looking for active prompt with slug:', data.slug);
+        console.log('All prompts for this slug:', allPrompts.filter((p: Prompt) => p.slug === data.slug));
         const active = allPrompts.find((p: Prompt) => p.slug === data.slug && p.is_active);
+        console.log('Found active prompt:', active);
         if (active) {
           // Always set activePrompt for comparison, even if it's the same version
           // This allows comparing your draft changes against the saved active version
           setActivePrompt(active);
+        } else {
+          console.warn('No active version found for slug:', data.slug);
         }
 
         // Load version history for this slug

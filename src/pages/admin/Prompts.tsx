@@ -193,6 +193,18 @@ export function Prompts() {
     // Pluralize "layer" to "layers"
     if (displayName === 'layer') displayName = 'layers';
 
+    // Hardcoded variable mapping (more reliable than database field)
+    const variableMap: Record<string, string[]> = {
+      'system': ['context'],
+      'word_verbal_layer': ['word', 'seed'],
+      'word_verbal_voicing': ['word', 'verbal_layer'],
+      'word_verbal_essence': ['word', 'verbal_voicing'],
+      'word_visual_layer': ['word', 'verbal_essence', 'verbal_voicing'],
+      'word_visual_essence': ['word', 'visual_layer'],
+      'word_visual_brief': ['word', 'visual_essence']
+    };
+    const variables = variableMap[slug] || activeVersion.input_variables || [];
+
     return (
                 <div key={slug} className="bg-slate-900/30 border border-slate-800 rounded-xl overflow-hidden">
                   {/* Header */}
@@ -209,9 +221,9 @@ export function Prompts() {
                         <h2 className="text-xl font-bold text-white font-serif capitalize tracking-wide leading-none mb-1">
                           {displayName}
                         </h2>
-                        {activeVersion.input_variables && activeVersion.input_variables.length > 0 && (
+                        {variables.length > 0 && (
                           <div className="flex gap-1.5">
-                            {activeVersion.input_variables.map(v => (
+                            {variables.map(v => (
                               <span key={v} className="text-[10px] font-mono text-slate-400 bg-slate-900 px-1.5 py-0.5 rounded border border-slate-800">
                                 {'{'}{v}{'}'}
                               </span>
