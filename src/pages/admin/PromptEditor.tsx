@@ -80,6 +80,42 @@ export function PromptEditor() {
   const [versionHistory, setVersionHistory] = useState<Prompt[]>([]);
   const [showHistory, setShowHistory] = useState(false);
 
+  // Available variables based on prompt slug
+  const getAvailableVariables = (slug: string): { name: string; description: string }[] => {
+    const variableMap: Record<string, { name: string; description: string }[]> = {
+      'system': [
+        { name: '{{context}}', description: 'The context or input being processed' }
+      ],
+      'word_verbal_layer': [
+        { name: '{{word}}', description: 'The word being analyzed' },
+        { name: '{{seed}}', description: 'The seed text for this word' }
+      ],
+      'word_verbal_voicing': [
+        { name: '{{word}}', description: 'The word being analyzed' },
+        { name: '{{verbal_layer}}', description: 'The semantic depth analysis from the previous step' }
+      ],
+      'word_verbal_essence': [
+        { name: '{{word}}', description: 'The word being analyzed' },
+        { name: '{{verbal_voicing}}', description: 'The voiced interpretation from the previous step' }
+      ],
+      'word_visual_layer': [
+        { name: '{{word}}', description: 'The word being analyzed' },
+        { name: '{{verbal_essence}}', description: 'The distilled verbal essence from the previous step' }
+      ],
+      'word_visual_essence': [
+        { name: '{{word}}', description: 'The word being analyzed' },
+        { name: '{{visual_layer}}', description: 'The visual structure from the previous step' }
+      ],
+      'word_visual_brief': [
+        { name: '{{word}}', description: 'The word being analyzed' },
+        { name: '{{visual_essence}}', description: 'The visual essence from the previous step' }
+      ]
+    };
+    return variableMap[slug] || [];
+  };
+
+  const availableVars = prompt ? getAvailableVariables(prompt.slug) : [];
+
   useEffect(() => {
     loadPrompt();
     loadRecentPatterns();
@@ -529,6 +565,28 @@ export function PromptEditor() {
         
         {/* Left: Editor */}
         <div className="flex flex-col gap-4 h-full overflow-hidden">
+          
+          {/* Available Variables */}
+          {availableVars.length > 0 && (
+            <div className="bg-blue-950/30 border border-blue-900/50 rounded-lg p-4 shrink-0">
+              <h3 className="text-xs font-bold text-blue-400 uppercase mb-3 flex items-center gap-2">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                </svg>
+                Available Variables
+              </h3>
+              <div className="grid grid-cols-1 gap-2">
+                {availableVars.map((v, i) => (
+                  <div key={i} className="flex items-start gap-3 text-sm">
+                    <code className="font-mono text-blue-300 bg-blue-950/50 px-2 py-1 rounded border border-blue-900/50 whitespace-nowrap">
+                      {v.name}
+                    </code>
+                    <span className="text-slate-400 text-xs leading-relaxed">{v.description}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
           {showSettings && (
             <div className="bg-slate-900 border border-slate-700 rounded-lg p-4 shrink-0 animate-in slide-in-from-top duration-200">
               <h3 className="text-xs font-bold text-slate-400 uppercase mb-3 flex items-center gap-2">
