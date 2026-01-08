@@ -139,23 +139,59 @@ export function Prompts() {
           <p className="text-sm text-slate-500">Create your first prompt to get started.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-8">
-          {Object.entries(groupedPrompts)
-            .sort(([slugA], [slugB]) => {
-              const order = ['system', 'layers', 'voicing', 'essence', 'image_brief', 'image'];
-              const indexA = order.indexOf(slugA.toLowerCase());
-              const indexB = order.indexOf(slugB.toLowerCase());
-              if (indexA !== -1 && indexB !== -1) return indexA - indexB;
-              if (indexA !== -1) return -1;
-              if (indexB !== -1) return 1;
-              return slugA.localeCompare(slugB);
-            })
-            .map(([slug, versions]) => {
-              // Find active version, or fallback to latest
-              const activeVersion = versions.find(p => p.is_active) || versions[0];
-              const history = versions.filter(p => p.id !== activeVersion.id).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+        <div className="space-y-12">
+          {/* System Section */}
+          {groupedPrompts['system'] && (
+            <div>
+              <h2 className="text-lg font-bold text-slate-300 uppercase tracking-wider mb-4 flex items-center gap-2">
+                <div className="w-1 h-6 bg-slate-500 rounded-full"></div>
+                System
+              </h2>
+              <div className="grid grid-cols-1 gap-8">
+                {renderPromptCard('system', groupedPrompts['system'])}
+              </div>
+            </div>
+          )}
 
-              return (
+          {/* Verbal Section */}
+          <div>
+            <h2 className="text-lg font-bold text-slate-300 uppercase tracking-wider mb-4 flex items-center gap-2">
+              <div className="w-1 h-6 bg-blue-500 rounded-full"></div>
+              Verbal
+            </h2>
+            <div className="grid grid-cols-1 gap-8">
+              {['word_verbal_layer', 'word_verbal_voicing', 'word_verbal_essence'].map(slug => 
+                groupedPrompts[slug] && renderPromptCard(slug, groupedPrompts[slug])
+              )}
+            </div>
+          </div>
+
+          {/* Visual Section */}
+          <div>
+            <h2 className="text-lg font-bold text-slate-300 uppercase tracking-wider mb-4 flex items-center gap-2">
+              <div className="w-1 h-6 bg-teal-500 rounded-full"></div>
+              Visual
+            </h2>
+            <div className="grid grid-cols-1 gap-8">
+              {['word_visual_layer', 'word_visual_essence', 'word_visual_image'].map(slug => 
+                groupedPrompts[slug] && renderPromptCard(slug, groupedPrompts[slug])
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
+  function renderPromptCard(slug: string, versions: Prompt[]) {
+              // Find active version, or fallback to latest
+    const activeVersion = versions.find(p => p.is_active) || versions[0];
+    const history = versions.filter(p => p.id !== activeVersion.id).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    
+    // Display name mapping
+    const displayName = slug.replace('word_verbal_', '').replace('word_visual_', '').replace('_', ' ');
+
+    return (
                 <div key={slug} className="bg-slate-900/30 border border-slate-800 rounded-xl overflow-hidden">
                   {/* Header */}
                   <div className="bg-slate-950/50 px-6 py-4 border-b border-slate-800 flex justify-between items-center">
@@ -169,7 +205,7 @@ export function Prompts() {
                       }`}></div>
                       <div>
                         <h2 className="text-xl font-bold text-white font-serif capitalize tracking-wide leading-none mb-1">
-                          {slug === 'image_brief' ? 'Image Brief' : slug}
+                          {displayName}
                         </h2>
                         {activeVersion.input_variables && activeVersion.input_variables.length > 0 && (
                           <div className="flex gap-1.5">
@@ -297,10 +333,6 @@ export function Prompts() {
                     </div>
                   </div>
                 </div>
-              );
-            })}
-        </div>
-      )}
-    </div>
-  );
+    );
+  }
 }
