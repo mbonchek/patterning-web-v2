@@ -208,82 +208,77 @@ export function Library() {
                   {/* Top Row: Verbal Layer (Left) | Visual Layers (Right) */}
                   <button
                     onClick={(e) => { e.stopPropagation(); handleInspect(pattern.verbal_layer, 'Verbal Layer', pattern.word); }}
-                    className={`flex flex-col items-start gap-1 px-2 py-2 rounded border transition-all ${
+                    className={`flex items-center justify-center px-2 py-2.5 rounded border transition-all ${
                       pattern.verbal_layer 
                         ? 'bg-blue-500/10 text-blue-400 border-blue-500/30 hover:bg-blue-500/20' 
                         : 'bg-slate-800/30 text-slate-600 border-slate-700/30'
                     }`}
                     disabled={!pattern.verbal_layer}
                   >
-                    <span className="font-bold text-[9px] uppercase tracking-tight">Verbal Layer</span>
-                    {pattern.verbal_layer && <span className="text-[8px] opacity-70 line-clamp-1">{pattern.verbal_layer.substring(0, 30)}...</span>}
+                    <span className="font-bold text-[10px] uppercase tracking-tight">Verbal Layer</span>
                   </button>
 
                   <button
                     onClick={(e) => { e.stopPropagation(); handleInspect(pattern.visual_layer, 'Visual Layer', pattern.word); }}
-                    className={`flex flex-col items-start gap-1 px-2 py-2 rounded border transition-all ${
+                    className={`flex items-center justify-center px-2 py-2.5 rounded border transition-all ${
                       pattern.visual_layer 
-                        ? 'bg-purple-500/10 text-purple-400 border-purple-500/30 hover:bg-purple-500/20' 
+                        ? 'bg-green-500/10 text-green-400 border-green-500/30 hover:bg-green-500/20' 
                         : 'bg-slate-800/30 text-slate-600 border-slate-700/30'
                     }`}
                     disabled={!pattern.visual_layer}
                   >
-                    <span className="font-bold text-[9px] uppercase tracking-tight">Visual Layers</span>
-                    {pattern.visual_layer && <span className="text-[8px] opacity-70 line-clamp-1">{pattern.visual_layer.substring(0, 30)}...</span>}
+                    <span className="font-bold text-[10px] uppercase tracking-tight">Visual Layers</span>
                   </button>
 
                   {/* Middle Row: Verbal Essence (Left) | Visual Essence (Right) */}
                   <button
                     onClick={(e) => { e.stopPropagation(); handleInspect(pattern.verbal_essence, 'Verbal Essence', pattern.word); }}
-                    className={`flex flex-col items-start gap-1 px-2 py-2 rounded border transition-all ${
+                    className={`flex items-center justify-center px-2 py-2.5 rounded border transition-all ${
                       pattern.verbal_essence 
-                        ? 'bg-amber-500/10 text-amber-400 border-amber-500/30 hover:bg-amber-500/20' 
+                        ? 'bg-blue-500/10 text-blue-400 border-blue-500/30 hover:bg-blue-500/20' 
                         : 'bg-slate-800/30 text-slate-600 border-slate-700/30'
                     }`}
                     disabled={!pattern.verbal_essence}
                   >
-                    <span className="font-bold text-[9px] uppercase tracking-tight">Verbal Essence</span>
-                    {pattern.verbal_essence && <span className="text-[8px] opacity-70 line-clamp-1">{pattern.verbal_essence.substring(0, 30)}...</span>}
+                    <span className="font-bold text-[10px] uppercase tracking-tight">Verbal Essence</span>
                   </button>
 
                   <button
                     onClick={(e) => { e.stopPropagation(); handleInspect(pattern.visual_essence, 'Visual Essence', pattern.word); }}
-                    className={`flex flex-col items-start gap-1 px-2 py-2 rounded border transition-all ${
+                    className={`flex items-center justify-center px-2 py-2.5 rounded border transition-all ${
                       pattern.visual_essence 
-                        ? 'bg-pink-500/10 text-pink-400 border-pink-500/30 hover:bg-pink-500/20' 
+                        ? 'bg-green-500/10 text-green-400 border-green-500/30 hover:bg-green-500/20' 
                         : 'bg-slate-800/30 text-slate-600 border-slate-700/30'
                     }`}
                     disabled={!pattern.visual_essence}
                   >
-                    <span className="font-bold text-[9px] uppercase tracking-tight">Visual Essence</span>
-                    {pattern.visual_essence && <span className="text-[8px] opacity-70 line-clamp-1">{pattern.visual_essence.substring(0, 30)}...</span>}
+                    <span className="font-bold text-[10px] uppercase tracking-tight">Visual Essence</span>
                   </button>
 
                   {/* Bottom Row: Voicing (Left) | Image (Right) */}
                   <button
                     onClick={(e) => { e.stopPropagation(); handleInspect(pattern.verbal_voicing, 'Voicing', pattern.word); }}
-                    className={`flex flex-col items-start gap-1 px-2 py-2 rounded border transition-all ${
+                    className={`flex items-center justify-center px-2 py-2.5 rounded border transition-all ${
                       pattern.verbal_voicing 
-                        ? 'bg-green-500/10 text-green-400 border-green-500/30 hover:bg-green-500/20' 
+                        ? 'bg-blue-500/10 text-blue-400 border-blue-500/30 hover:bg-blue-500/20' 
                         : 'bg-slate-800/30 text-slate-600 border-slate-700/30'
                     }`}
                     disabled={!pattern.verbal_voicing}
                   >
-                    <span className="font-bold text-[9px] uppercase tracking-tight">Voicing</span>
-                    {pattern.verbal_voicing && <span className="text-[8px] opacity-70 line-clamp-1">{pattern.verbal_voicing.substring(0, 30)}...</span>}
+                    <span className="font-bold text-[10px] uppercase tracking-tight">Voicing</span>
                   </button>
 
                   <button
                     onClick={(e) => { e.stopPropagation(); handleOpenPattern(pattern); }}
-                    className={`flex flex-col items-start gap-1 px-2 py-2 rounded border transition-all ${
+                    className={`flex items-center justify-center gap-2 px-2 py-2.5 rounded border transition-all ${
                       pattern.image_url 
-                        ? 'bg-teal-500/10 text-teal-400 border-teal-500/30 hover:bg-teal-500/20' 
+                        ? 'bg-green-500/10 text-green-400 border-green-500/30 hover:bg-green-500/20' 
                         : 'bg-slate-800/30 text-slate-600 border-slate-700/30'
                     }`}
                     disabled={!pattern.image_url}
                   >
-                    <span className="font-bold text-[9px] uppercase tracking-tight">Image</span>
-                    <Eye size={10} />
+                    <span className="font-bold text-[10px] uppercase tracking-tight">Image</span>
+                    <Eye size={12} />
                   </button>
                 </div>
 
