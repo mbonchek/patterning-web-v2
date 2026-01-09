@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ChevronDown, ChevronUp, ArrowLeft, Maximize2 } from 'lucide-react';
+import { ChevronDown, ChevronUp, ArrowLeft, Maximize2, GitBranch } from 'lucide-react';
 
 interface Pattern {
+  id: string;
   word: string;
   image_url?: string;
   verbal_essence?: string;
@@ -22,8 +23,71 @@ export default function PatternDetail() {
   const [verbalLayerOpen, setVerbalLayerOpen] = useState(false);
   const [visualLayerOpen, setVisualLayerOpen] = useState(false);
   const [fullscreenImage, setFullscreenImage] = useState(false);
+  const [branching, setBranching] = useState(false);
+  const [branchingFrom, setBranchingFrom] = useState<string | null>(null);
   
   console.log('PatternDetail mounted, word:', word);
+
+  const handleBranch = async (branchPoint: string) => {
+    if (!pattern) return;
+    if (!confirm(`Create a branch from ${branchPoint}? This will reuse everything up to this point and regenerate the rest.`)) return;
+    
+    setBranching(true);
+    setBranchingFrom(branchPoint);
+    
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/pattern/${pattern.id}/branch`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ branch_point: branchPoint, collect_trace: false })
+        }
+      );
+
+      if (!response.ok) throw new Error('Failed to create branch');
+
+      // Read SSE stream
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+      let newPatternId = null;
+
+      if (reader) {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          const chunk = decoder.decode(value);
+          const lines = chunk.split('\n');
+
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              try {
+                const data = JSON.parse(line.slice(6));
+                if (data.type === 'complete') {
+                  newPatternId = data.pattern_id;
+                }
+              } catch (e) {
+                // Ignore parse errors
+              }
+            }
+          }
+        }
+      }
+
+      if (newPatternId) {
+        alert('Branch created successfully!');
+        // Navigate to new pattern
+        navigate(`/pattern/word/${newPatternId}`);
+      }
+    } catch (error) {
+      console.error('Error creating branch:', error);
+      alert('Failed to create branch');
+    } finally {
+      setBranching(false);
+      setBranchingFrom(null);
+    }
+  };
 
   useEffect(() => {
     if (!word && !id) return;
@@ -65,6 +129,7 @@ export default function PatternDetail() {
         
         // Transform the nested structure to flat pattern
         const transformedPattern: Pattern = {
+          id: patternData.id,
           word: patternData.word_seeds?.text || word || '',
           image_url: patternData.word_visual_image?.image_url,
           verbal_essence: patternData.word_verbal_essence?.content,
@@ -157,19 +222,35 @@ export default function PatternDetail() {
           {pattern.verbal_essence && (
             <div className="bg-[#1a1f2e]/60 backdrop-blur-sm rounded-2xl p-8 border border-[#00f0ff]/30 shadow-lg shadow-[#00f0ff]/10">
               <h2 className="text-2xl font-serif font-semibold text-[#00f0ff] mb-4">Verbal Essence</h2>
-              <p className="text-gray-200 text-lg leading-relaxed font-sans">
+              <p className="text-gray-200 text-lg leading-relaxed font-sans mb-4">
                 {pattern.verbal_essence}
               </p>
+              <button
+                onClick={() => handleBranch('vees')}
+                disabled={branching}
+                className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-sm rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <GitBranch size={14} />
+                {branching && branchingFrom === 'vees' ? 'Branching...' : 'Branch from here'}
+              </button>
             </div>
           )}
           
           {/* Visual Essence */}
           {pattern.visual_essence && (
             <div className="bg-[#1a1f2e]/60 backdrop-blur-sm rounded-2xl p-8 border border-[#7c4dff]/30 shadow-lg shadow-[#7c4dff]/10">
-              <h2 className="text-2xl font-serif font-semibold text-[#7c4dff]">Visual Essence</h2>
-              <p className="text-gray-200 text-lg leading-relaxed font-sans">
+              <h2 className="text-2xl font-serif font-semibold text-[#7c4dff] mb-4">Visual Essence</h2>
+              <p className="text-gray-200 text-lg leading-relaxed font-sans mb-4">
                 {pattern.visual_essence}
               </p>
+              <button
+                onClick={() => handleBranch('vies')}
+                disabled={branching}
+                className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-sm rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <GitBranch size={14} />
+                {branching && branchingFrom === 'vies' ? 'Branching...' : 'Branch from here'}
+              </button>
             </div>
           )}
         </div>
@@ -191,9 +272,17 @@ export default function PatternDetail() {
             
             {voicingOpen && (
               <div className="mt-4 bg-[#1a1f2e]/60 backdrop-blur-sm rounded-2xl p-10 border border-[#00f0ff]/20 shadow-lg shadow-[#00f0ff]/5">
-                <div className="text-gray-300 leading-relaxed whitespace-pre-wrap font-mono text-sm">
+                <div className="text-gray-300 leading-relaxed whitespace-pre-wrap font-mono text-sm mb-6">
                   {pattern.verbal_voicing}
                 </div>
+                <button
+                  onClick={() => handleBranch('vevc')}
+                  disabled={branching}
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <GitBranch size={16} />
+                  {branching && branchingFrom === 'vevc' ? 'Branching...' : 'Branch from here'}
+                </button>
               </div>
             )}
           </div>
@@ -216,9 +305,17 @@ export default function PatternDetail() {
             
             {verbalLayerOpen && (
               <div className="mt-4 bg-[#1a1f2e]/60 backdrop-blur-sm rounded-2xl p-10 border border-[#00e5a0]/20 shadow-lg shadow-[#00e5a0]/5">
-                <div className="text-gray-300 leading-relaxed whitespace-pre-wrap font-mono text-sm">
+                <div className="text-gray-300 leading-relaxed whitespace-pre-wrap font-mono text-sm mb-6">
                   {pattern.verbal_layer}
                 </div>
+                <button
+                  onClick={() => handleBranch('vely')}
+                  disabled={branching}
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <GitBranch size={16} />
+                  {branching && branchingFrom === 'vely' ? 'Branching...' : 'Branch from here'}
+                </button>
               </div>
             )}
           </div>
@@ -241,9 +338,17 @@ export default function PatternDetail() {
             
             {visualLayerOpen && (
               <div className="mt-4 bg-[#1a1f2e]/60 backdrop-blur-sm rounded-2xl p-10 border border-[#7c4dff]/20 shadow-lg shadow-[#7c4dff]/5">
-                <div className="text-gray-300 leading-relaxed whitespace-pre-wrap font-mono text-sm">
+                <div className="text-gray-300 leading-relaxed whitespace-pre-wrap font-mono text-sm mb-6">
                   {pattern.visual_layer}
                 </div>
+                <button
+                  onClick={() => handleBranch('vily')}
+                  disabled={branching}
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <GitBranch size={16} />
+                  {branching && branchingFrom === 'vily' ? 'Branching...' : 'Branch from here'}
+                </button>
               </div>
             )}
           </div>
