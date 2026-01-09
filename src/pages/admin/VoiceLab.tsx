@@ -163,23 +163,65 @@ function FormattedTraceViewer({ patternId, word }: { patternId: string; word: st
             </button>
 
             {isExpanded && (
-              <div className="p-4 border-t border-slate-800 space-y-3 bg-slate-950/50">
-                {stepDetail && (
-                  <div>
-                    <p className="text-[10px] text-slate-500 uppercase font-bold mb-2">Prompt Configuration</p>
-                    <pre className="text-[11px] text-slate-300 bg-slate-950 p-2 rounded border border-slate-800 overflow-x-auto whitespace-pre-wrap max-h-40 overflow-y-auto">
-                      {JSON.stringify(stepDetail.config, null, 2)}
-                    </pre>
+              <div className="p-4 border-t border-slate-800 space-y-4 bg-slate-950/50">
+                {/* INPUT SECTION */}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                    <p className="text-xs text-blue-400 uppercase font-bold">Input</p>
                   </div>
-                )}
-                {httpTrace && (
-                  <div>
-                    <p className="text-[10px] text-slate-500 uppercase font-bold mb-2">Response</p>
-                    <pre className="text-[11px] text-teal-400 bg-slate-950 p-2 rounded border border-slate-800 overflow-x-auto whitespace-pre-wrap max-h-60 overflow-y-auto">
-                      {JSON.stringify(httpTrace.responseBody, null, 2)}
-                    </pre>
+                  
+                  {httpTrace?.requestBody?.system_prompt && (
+                    <div className="ml-4">
+                      <p className="text-[10px] text-slate-500 uppercase font-bold mb-1">System Prompt</p>
+                      <div className="text-[11px] text-amber-300 bg-slate-900/80 p-3 rounded border border-amber-900/30 whitespace-pre-wrap">
+                        {httpTrace.requestBody.system_prompt}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {httpTrace?.requestBody?.prompt_preview && (
+                    <div className="ml-4">
+                      <p className="text-[10px] text-slate-500 uppercase font-bold mb-1">User Prompt</p>
+                      <div className="text-[11px] text-blue-300 bg-slate-900/80 p-3 rounded border border-blue-900/30 whitespace-pre-wrap">
+                        {httpTrace.requestBody.prompt_preview}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {stepDetail?.config && (
+                    <div className="ml-4">
+                      <p className="text-[10px] text-slate-500 uppercase font-bold mb-1">Config</p>
+                      <div className="text-[10px] text-slate-400 bg-slate-900/80 p-2 rounded border border-slate-800 font-mono">
+                        {Object.entries(stepDetail.config).map(([key, value]) => (
+                          <div key={key}><span className="text-slate-500">{key}:</span> {JSON.stringify(value)}</div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* ARROW */}
+                <div className="flex items-center gap-2 ml-2">
+                  <div className="w-0.5 h-6 bg-gradient-to-b from-blue-500 to-teal-500"></div>
+                  <span className="text-slate-600">↓</span>
+                </div>
+
+                {/* OUTPUT SECTION */}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-teal-500 rounded-full"></div>
+                    <p className="text-xs text-teal-400 uppercase font-bold">Output</p>
                   </div>
-                )}
+                  
+                  {httpTrace?.responseBody?.content && (
+                    <div className="ml-4">
+                      <div className="text-[11px] text-teal-300 bg-slate-900/80 p-3 rounded border border-teal-900/30 whitespace-pre-wrap max-h-96 overflow-y-auto">
+                        {httpTrace.responseBody.content}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </div>
@@ -197,6 +239,7 @@ export function VoiceLab() {
   const [selectedLog, setSelectedLog] = useState<LogEntry | null>(null);
   const [selectedHistory, setSelectedHistory] = useState<HistoryEntry | null>(null);
   const [expandedHttpTraces, setExpandedHttpTraces] = useState<Set<number>>(new Set());
+  const [collectTrace, setCollectTrace] = useState(true);
 
   // Load history on mount
   useEffect(() => {
@@ -265,7 +308,7 @@ export function VoiceLab() {
       ));
 
       try {
-        const url = `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/word/${word}/generate`;
+        const url = `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/word/${word}/generate?collect_trace=${collectTrace}`;
         const response = await fetch(url, {
           method: 'POST',
           headers: { 'Accept': 'text/event-stream' }
@@ -417,6 +460,18 @@ export function VoiceLab() {
           rows={3}
           className="w-full bg-slate-950 border border-slate-800 rounded px-4 py-3 text-white font-mono text-sm focus:border-teal-500 outline-none"
         />
+        <div className="mt-3 flex items-center gap-2">
+          <input
+            type="checkbox"
+            id="collectTrace"
+            checked={collectTrace}
+            onChange={(e) => setCollectTrace(e.target.checked)}
+            className="w-4 h-4 text-teal-600 bg-slate-950 border-slate-700 rounded focus:ring-teal-500"
+          />
+          <label htmlFor="collectTrace" className="text-sm text-slate-400">
+            Collect generation trace (for debugging)
+          </label>
+        </div>
         <button
           onClick={() => handleStart()}
           disabled={isProcessing}
