@@ -306,6 +306,102 @@ visual_essence (text)
 
 ---
 
+## V1 vs V2 Schema Migration
+
+### Critical Warning
+
+The codebase has BOTH V1 and V2 schemas. When debugging or modifying code, always check which schema is being used.
+
+### V1 Schema (Legacy)
+
+**Table:** `patterns`
+
+**Columns:**
+- `id`, `word`
+- `layer_id` → layers table
+- `voicing_id` → voicings table
+- `essence_id` → essences table
+- `brief_id` → briefs table
+- `image_id` → images table
+
+**Related tables:** `layers`, `voicings`, `essences`, `briefs`, `images`
+
+### V2 Schema (Current)
+
+**Table:** `patterns_word`
+
+**Columns:**
+- `id`, `created_at`
+- `seed_id` → word_seeds table
+- `verbal_layer_id` → word_verbal_layer table
+- `verbal_voicing_id` → word_verbal_voicing table
+- `verbal_essence_id` → word_verbal_essence table
+- `visual_layer_id` → word_visual_layer table
+- `visual_essence_id` → word_visual_essence table
+- `visual_image_id` → word_visual_image table
+
+**Related tables:** `word_seeds`, `word_verbal_layer`, `word_verbal_voicing`, `word_verbal_essence`, `word_visual_layer`, `word_visual_essence`, `word_visual_image`
+
+**IMPORTANT:** All V2 tables are prefixed with `word_`. This was confirmed by querying the actual Supabase schema.
+
+### Migration Checklist
+
+When updating code that touches patterns:
+
+1. **Check table name:** `patterns` (V1) vs `patterns_word` (V2)
+2. **Check column names:** `layer_id` (V1) vs `verbal_layer_id` (V2)
+3. **Check related table names:** `layers` (V1) vs `word_verbal_layer` (V2) - **Note the word_ prefix!**
+4. **Check API field names:** `image_brief` (V1) vs `visual_layer` (V2)
+
+**Critical:** V2 tables ALL have `word_` prefix. Don't assume table names - verify with the actual schema.
+
+### Known V1 Code Locations
+
+**PatternManager** (`services/pattern_manager.py`):
+- Still uses V1 schema
+- Needs update for delete functionality
+- Methods: `delete_pattern_safely`, `clear_pattern_element`, `get_pattern_usage_stats`
+
+### API Response Field Mapping
+
+| V1 Field | V2 Field | Notes |
+|----------|----------|-------|
+| `image_brief` | `visual_layer` | Visual elements analysis |
+| `brief` | `visual_essence` | Image generation prompt |
+| `layers` | `verbal_layer` | Semantic depth analysis |
+| `essence` | `verbal_essence` | One-sentence essence |
+| `voicing` | `verbal_voicing` | First-person voice |
+
+---
+
+## Database Access
+
+### Supabase Direct Access
+
+You have direct access to the Supabase database for verification and debugging:
+
+**Credentials location:** `/home/ubuntu/patterning-api-v2/.env`
+- `SUPABASE_URL`
+- `SUPABASE_KEY` (service role key)
+
+**How to query:**
+```bash
+# Using curl with Supabase REST API
+curl -s "$SUPABASE_URL/rest/v1/table_name?limit=5" \
+  -H "apikey: $SUPABASE_KEY" \
+  -H "Authorization: Bearer $SUPABASE_KEY"
+```
+
+**When to use:**
+- Verifying actual table names and schema structure
+- Checking if data exists when API returns unexpected results
+- Debugging data flow issues
+- Confirming assumptions before making code changes
+
+**Remember:** Don't trust documentation - verify with the actual database when uncertain.
+
+---
+
 ## Performance Considerations
 
 ### Database Queries

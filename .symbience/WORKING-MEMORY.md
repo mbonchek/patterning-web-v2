@@ -172,6 +172,26 @@ Each word flows through a sequential pipeline:
 
 ---
 
+## Working Principles
+
+### Patience and Verification (2026-01-08)
+
+**DO NOT get ahead of the user:**
+- Wait for user direction before taking action
+- Don't assume what they want next
+- Don't be overly eager or jump ahead
+- If the user says "hold on", STOP and wait
+
+**DO NOT change anything without being absolutely sure:**
+- Verify assumptions by checking actual data (database, API responses, code)
+- Don't trust documentation - verify with the actual system
+- When uncertain about schema/structure, query the database directly
+- Ask the user for clarification rather than guessing
+
+**If you get ahead repeatedly, the user will need to start a new thread.**
+
+---
+
 ## Lessons Learned
 
 ### Debugging Approach (2026-01-08)

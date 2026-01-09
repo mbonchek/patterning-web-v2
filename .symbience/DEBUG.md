@@ -135,6 +135,32 @@ You have access to the entire codebase. Use it.
 - **Fix:** Changed API to return `visual_layer` field, updated frontend mapping
 - **Lesson:** When V1→V2 migration happens, check for obsolete field names in API responses. The comment said "replaces brief in V2" but the field was still named `image_brief`.
 
+### 2026-01-08: visual_layer input field not appearing
+- **Issue:** Input field for visual_layer not showing in prompt editor playground
+- **Root cause:** Malformed JSX syntax left over from removing debug logging - extra `});` and broken IIFE pattern
+- **Lesson:** After removing debug code, verify the surrounding syntax is still valid. Incomplete edits can break rendering.
+
+### 2026-01-08: Prompt activation not deactivating previous version
+- **Issue:** When saving a new prompt version as "active", the previous active version wasn't being deactivated
+- **Root cause:** Two different endpoints existed - `POST /api/admin/prompts` (no deactivation) and `PUT /api/prompts/<slug>` (had deactivation). Frontend was calling the one without deactivation logic.
+- **Lesson:** When there are multiple endpoints for similar operations, check which one the frontend is actually calling. Don't assume the logic exists just because you see it somewhere in the codebase.
+
+### 2026-01-08: Library delete not working
+- **Issue:** Delete button in Library not working for pattern cards
+- **Root cause:** PatternManager.delete_pattern_safely() uses V1 schema (`patterns` table with `layer_id`, `voicing_id`, etc.) but Library now uses V2 schema (`patterns_word` table with `verbal_layer_id`, `visual_layer_id`, etc.)
+- **Lesson:** When migrating to new schema, update ALL services that interact with the old tables. Check for V1 table/column names in utility services.
+
+### 2026-01-08: Image generation producing SVG instead of calling Gemini
+- **Issue:** word_visual_image prompt was outputting SVG code instead of generating an actual image
+- **Root cause:** Backend `test_prompt()` only recognized `slug == 'image'` for image generation, not `slug == 'word_visual_image'`
+- **Lesson:** When adding new prompt types that require special handling (like image generation), update ALL detection logic, not just the prompt template.
+
+### 2026-01-08: VoiceLab trace matching issues
+- **Issue:** Steps showing "pending" even after complete, image trace not showing
+- **Root cause:** Frontend was matching httpTraces to steps by array index, but there are multiple traces per step (request + response). Traces didn't have step identifiers.
+- **Fix:** Added `step` and `prompt_slug` fields to http_trace events, updated frontend to match by step name
+- **Lesson:** When correlating events from different sources (step_detail, http_trace, saved), use explicit identifiers, not array positions.
+
 ---
 
-**Last updated:** 2026-01-08 (evening)
+**Last updated:** 2026-01-08 (late evening)
