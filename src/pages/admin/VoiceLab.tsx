@@ -217,10 +217,15 @@ export function VoiceLab() {
 
   const fetchHistory = async () => {
     try {
+      console.log('Fetching history...');
       const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/generations/history?limit=50`);
+      console.log('History response status:', res.status);
       if (res.ok) {
         const data = await res.json();
+        console.log('History data:', data);
         setHistory(data.patterns || []);
+      } else {
+        console.error('History fetch failed:', res.status, res.statusText);
       }
     } catch (error) {
       console.error('Failed to load history:', error);
