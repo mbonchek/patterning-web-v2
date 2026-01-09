@@ -16,11 +16,6 @@ interface Pattern {
   children?: Pattern[];
 }
 
-interface TreeNode {
-  pattern: Pattern;
-  expanded: boolean;
-}
-
 export default function Branching() {
   const [roots, setRoots] = useState<Pattern[]>([]);
   const [loading, setLoading] = useState(true);
