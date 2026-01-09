@@ -7,6 +7,7 @@ import { PromptEditor } from './pages/admin/PromptEditor';
 import { BriefLab } from './pages/admin/BriefLab';
 import { ImageLab } from './pages/admin/ImageLab';
 import { VoiceLab } from './pages/admin/VoiceLab';
+import Branching from './pages/admin/Branching';
 import PatternDetail from './pages/PatternDetail';
 
 function App() {
@@ -25,6 +26,7 @@ function App() {
               <Route path="prompts" element={<Prompts />} />
               <Route path="prompts/:id" element={<PromptEditor />} />
               <Route path="voice" element={<VoiceLab />} />
+              <Route path="branching" element={<Branching />} />
               <Route path="test-brief" element={<BriefLab />} />
               <Route path="test-image" element={<ImageLab />} />
               <Route path="playground" element={<div className="text-white">Playground (Coming Soon)</div>} />

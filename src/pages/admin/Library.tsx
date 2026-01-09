@@ -14,7 +14,8 @@ import {
   Droplet,
   Podcast,
   LayoutDashboard,
-  Sparkle
+  Sparkle,
+  GitBranch
 } from 'lucide-react';
 
 interface Pattern {
@@ -75,6 +76,64 @@ export function Library() {
   const handleManage = (pattern: Pattern) => {
     setSelectedPattern(pattern);
     setIsModalOpen(true);
+  };
+
+  const handleBranch = async (pattern: Pattern) => {
+    if (!confirm(`Create a new branch from "${pattern.word}"?`)) return;
+    
+    setProcessingAction(true);
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/pattern/${pattern.id}/branch`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ collect_trace: false })
+        }
+      );
+
+      if (!response.ok) throw new Error('Failed to create branch');
+
+      // Read SSE stream
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+      let newPatternId = null;
+
+      if (reader) {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          const chunk = decoder.decode(value);
+          const lines = chunk.split('\n');
+
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              try {
+                const data = JSON.parse(line.slice(6));
+                if (data.type === 'complete') {
+                  newPatternId = data.pattern_id;
+                }
+              } catch (e) {
+                // Ignore parse errors
+              }
+            }
+          }
+        }
+      }
+
+      // Refresh library
+      await fetchHistory();
+      
+      if (newPatternId) {
+        alert('Branch created successfully!');
+      }
+    } catch (error) {
+      console.error('Error creating branch:', error);
+      alert('Failed to create branch');
+    } finally {
+      setProcessingAction(false);
+    }
   };
 
   const handleInspect = (content: string | null, type: string, word: string) => {
@@ -398,6 +457,17 @@ export function Library() {
               </button>
             </div>
             <div className="p-6 space-y-3">
+              <button
+                onClick={() => {
+                  setIsModalOpen(false);
+                  handleBranch(selectedPattern);
+                }}
+                disabled={processingAction}
+                className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {processingAction ? <Loader2 className="animate-spin" size={16} /> : <GitBranch size={16} />}
+                Create Branch
+              </button>
               <button
                 onClick={() => handleAction('delete_all')}
                 disabled={processingAction}

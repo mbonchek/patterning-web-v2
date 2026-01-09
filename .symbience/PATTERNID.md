@@ -249,8 +249,105 @@ GET /api/element/viim:1nR4pK2w
 7. **Precise:** Direct database lookups by short ID
 
 ---
+## Pattern Evolution
+
+### Genetic Model
+
+The PatternID system is the foundation for **pattern genetics** - treating each element as a gene that can be tracked, reused, and selected for fitness.
+
+**Key Insight:** Each `elid` is a **genetic marker** that enables:
+- **Forward Evolution:** Branch from any element to create variations
+- **Backward Tracing:** Attribute successful patterns to specific elements
+- **Element Reuse:** Preserve proven elements in new patterns
+- **Fitness Tracking:** Measure which elements are most successful
+
+### Lineage Tracking
+
+Patterns can have parent-child relationships:
+
+```
+ghost (gen 0)
+├─ ghost-v2 (gen 1, branch from vees)
+├─ ghost-v3 (gen 1, branch from vily)
+│  └─ ghost-v4 (gen 2, branch from vies)
+└─ ghost-v5 (gen 1, branch from vevc)
+```
+
+**Database Schema:**
+```sql
+patterns_word:
+  - parent_pattern_id: UUID (references parent pattern)
+  - branch_point: VARCHAR(10) (e.g., "vees", "vily")
+  - generation: INTEGER (depth from root, 0 = original)
+  - branch_count: INTEGER (number of children)
+```
+
+### Element Reuse
+
+When branching, elements can be reused instead of regenerated:
+
+```python
+# Branch from ghost at vees (keep verbal chain)
+generate_pattern_stream(
+    word="ghost",
+    reuse_elements={
+        "vely": "2tvrCaJB",  # Keep this verbal layer
+        "vevc": "3kR9mN2x",  # Keep this voicing
+        "vees": "9xK2pL4m"   # Keep this essence
+    }
+)
+# Only generates: vily, vies, viim (new)
+```
+
+**Tracking:**
+```sql
+pattern_element_usage:
+  - pattern_id: UUID (which pattern uses this element)
+  - element_elid: VARCHAR(8) (the genetic marker)
+  - was_reused: BOOLEAN (TRUE if from another pattern)
+  - source_pattern_id: UUID (where it came from)
+```
+
+### Fitness Metrics
+
+Track which elements are most successful:
+
+```sql
+element_fitness:
+  - element_elid: VARCHAR(8) PRIMARY KEY
+  - times_used: INTEGER (total usage count)
+  - times_reused: INTEGER (reuse count)
+  - descendant_count: INTEGER (branching success)
+  - user_likes: INTEGER (community feedback)
+```
+
+**Example Query:**
+```sql
+-- Find the best verbal layers
+SELECT vl.elid, vl.content, ef.times_used, ef.user_likes
+FROM word_verbal_layer vl
+JOIN element_fitness ef ON vl.elid = ef.element_elid
+WHERE ef.times_used > 5
+ORDER BY ef.user_likes DESC;
+```
+
+### Cross-Breeding (Future)
+
+Combine elements from different patterns:
+
+```
+word.{sdid}.vely:ABC123.vevc:XYZ789.vees:DEF456.vily:GHI789.vies:JKL012.viim:MNO345
+                 ↑ from ghost      ↑ from love     ↑ from hope
+```
+
+This enables **hybrid patterns** that combine successful elements from multiple lineages.
+
+**See:** `/.symbience/EVOLUTION.md` for complete evolutionary model documentation.
+
+---
 
 ## Future Considerations
+
 
 ### Song Patterns
 

@@ -94,6 +94,16 @@ Generation traces system:
 - Token limit configuration
 - Truncation detection
 
+### EVOLUTION.md
+Pattern evolution and genetics system:
+- Pattern DNA and genetic markers
+- Forward evolution (branching)
+- Backward tracing (attribution)
+- Element reuse mechanism
+- Fitness metrics and selection
+- Lineage visualization
+- Cross-breeding (future)
+
 ---
 
 ## Maintenance
