@@ -32,7 +32,7 @@ interface Pattern {
   verbal_voicing?: { content: string };
   verbal_essence?: { content: string };
   visual_layer?: { content: string };
-  visual_essence?: { content: string };
+  visual_brief?: { content: string };
 }
 
 export function PromptEditor() {
@@ -101,17 +101,15 @@ export function PromptEditor() {
         { name: '{{verbal_voicing}}', description: 'The voiced interpretation from the previous step' }
       ],
       'word_visual_layer': [
-        { name: '{{word}}', description: 'The word being analyzed' },
-        { name: '{{verbal_essence}}', description: 'The distilled verbal essence from the previous step' },
-        { name: '{{verbal_voicing}}', description: 'The voiced interpretation for additional context' }
+        { name: '{{word}}', description: 'The word being analyzed' }
       ],
-      'word_visual_essence': [
+      'word_visual_brief': [
         { name: '{{word}}', description: 'The word being analyzed' },
         { name: '{{visual_layer}}', description: 'The visual structure from the previous step' }
       ],
       'word_visual_image': [
         { name: '{{word}}', description: 'The word being analyzed' },
-        { name: '{{visual_essence}}', description: 'The visual brief for image generation' }
+        { name: '{{visual_brief}}', description: 'The visual brief for image generation' }
       ]
     };
     return variableMap[slug] || [];
@@ -172,7 +170,7 @@ export function PromptEditor() {
     const newInputs = { ...testInputs };
     
     // Intelligent mapping based on V2 schema and common variable names
-    // API returns flat structure: {word, essence, voicing, visual_essence, layers, visual_layer}
+    // API returns flat structure: {word, essence, voicing, visual_brief, layers, visual_layer}
     const mappings: Record<string, any> = {
       word: pattern.word,
       seed: pattern.word,
@@ -181,14 +179,14 @@ export function PromptEditor() {
       verbal_voicing: pattern.voicing,
       word_voicing: pattern.voicing,
       text: pattern.voicing,
-      essence: pattern.essence || pattern.visual_essence,
+      essence: pattern.essence || pattern.visual_brief,
       verbal_essence: pattern.essence,
-      visual_essence: pattern.visual_essence,
-      description: pattern.essence || pattern.visual_essence,
+      visual_brief: pattern.visual_brief,
+      description: pattern.essence || pattern.visual_brief,
       layers: pattern.layers,
       verbal_layer: pattern.layers,
       visual_layer: pattern.visual_layer,
-      brief: pattern.visual_essence
+      brief: pattern.visual_brief
     };
 
     // Apply mappings to all available variables (not detectedVars, which depends on template loading)

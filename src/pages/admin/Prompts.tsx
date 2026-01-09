@@ -168,7 +168,7 @@ export function Prompts() {
               Visual
             </h2>
             <div className="grid grid-cols-1 gap-8">
-              {['word_visual_layer', 'word_visual_essence', 'word_visual_image'].map(slug => 
+              {['word_visual_layer', 'word_visual_brief', 'word_visual_image'].map(slug => 
                 groupedPrompts[slug] && renderPromptCard(slug, groupedPrompts[slug])
               )}
             </div>
@@ -194,8 +194,8 @@ export function Prompts() {
       'word_verbal_layer': { inputs: ['word', 'seed'], output: 'verbal_layer' },
       'word_verbal_voicing': { inputs: ['word', 'verbal_layer'], output: 'verbal_voicing' },
       'word_verbal_essence': { inputs: ['word', 'verbal_voicing'], output: 'verbal_essence' },
-      'word_visual_layer': { inputs: ['word', 'verbal_essence', 'verbal_voicing'], output: 'visual_layer' },
-      'word_visual_essence': { inputs: ['word', 'visual_layer'], output: 'visual_essence' }
+      'word_visual_layer': { inputs: ['word'], output: 'visual_layer' },
+      'word_visual_brief': { inputs: ['word', 'visual_layer'], output: 'visual_brief' }
     };
     const varInfo = inputOutputMap[slug] || { inputs: activeVersion.input_variables || [], output: null };
 

@@ -26,7 +26,7 @@ interface Pattern {
   verbal_voicing: string | null;
   verbal_essence: string | null;
   visual_layer: string | null;
-  visual_essence: string | null;
+  visual_brief: string | null;
   image_url: string | null;
   thumbnail_url?: string | null;
   created_at: string;
@@ -333,12 +333,12 @@ export function Library() {
                         <LayoutDashboard size={14} />
                       </button>
                       <button
-                        onClick={(e) => { e.stopPropagation(); handleInspect(pattern.visual_essence, 'Visual Essence', pattern.word); }}
+                        onClick={(e) => { e.stopPropagation(); handleInspect(pattern.visual_brief, 'Visual Brief', pattern.word); }}
                         className={`flex items-center justify-center p-2 rounded border transition-all ${
-                          pattern.visual_essence ? 'bg-green-500/10 text-green-400 border-green-500/30 hover:bg-green-500/20' : 'bg-slate-800/30 text-slate-600 border-slate-700/30'
+                          pattern.visual_brief ? 'bg-green-500/10 text-green-400 border-green-500/30 hover:bg-green-500/20' : 'bg-slate-800/30 text-slate-600 border-slate-700/30'
                         }`}
-                        title="Visual Essence"
-                        disabled={!pattern.visual_essence}
+                        title="Visual Brief"
+                        disabled={!pattern.visual_brief}
                       >
                         <Sparkle size={14} />
                       </button>
