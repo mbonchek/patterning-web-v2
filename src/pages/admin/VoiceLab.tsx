@@ -144,7 +144,7 @@ function FormattedTraceViewer({ patternId, word }: { patternId: string; word: st
       </div>
 
       {Object.entries(stepGroups).map(([step, group], idx) => {
-        const { stepDetail, httpTrace, success } = group;
+        const { httpTrace, success } = group;
         const isExpanded = expandedSteps.has(idx);
 
         return (
