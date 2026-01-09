@@ -33,7 +33,8 @@ function App() {
           </AdminLayout>
         } />
         
-        {/* Public Pattern Detail Route - Must come after /admin/* */}
+        {/* Public Pattern Detail Routes - Must come after /admin/* */}
+        <Route path="/pattern/word/:id" element={<PatternDetail />} />
         <Route path="/:word" element={<PatternDetail />} />
       </Routes>
     </BrowserRouter>

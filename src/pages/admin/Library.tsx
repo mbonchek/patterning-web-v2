@@ -83,7 +83,7 @@ export function Library() {
   };
 
   const handleOpenPattern = (pattern: Pattern) => {
-    navigate(`/${pattern.word}`);
+    navigate(`/pattern/word/${pattern.id}`);
   };
 
   const handleOpenImage = (imageUrl: string | null) => {

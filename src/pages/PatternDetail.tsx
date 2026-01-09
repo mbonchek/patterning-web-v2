@@ -14,7 +14,7 @@ interface Pattern {
 }
 
 export default function PatternDetail() {
-  const { word } = useParams<{ word: string }>();
+  const { word, id } = useParams<{ word?: string; id?: string }>();
   const navigate = useNavigate();
   const [pattern, setPattern] = useState<Pattern | null>(null);
   const [loading, setLoading] = useState(true);
@@ -26,37 +26,53 @@ export default function PatternDetail() {
   console.log('PatternDetail mounted, word:', word);
 
   useEffect(() => {
-    if (!word) return;
+    if (!word && !id) return;
     
     // Fetch pattern data from API
     const fetchPattern = async () => {
       try {
         setLoading(true);
-        console.log('Fetching pattern for word:', word);
-        const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/word/${word}`);
+        
+        let apiUrl;
+        if (id) {
+          // Fetching by pattern ID
+          console.log('Fetching pattern by ID:', id);
+          apiUrl = `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/pattern/word/${id}`;
+        } else {
+          // Fetching by word (legacy route)
+          console.log('Fetching pattern for word:', word);
+          apiUrl = `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/word/${word}`;
+        }
+        
+        const response = await fetch(apiUrl);
         console.log('Response status:', response.status);
         if (!response.ok) throw new Error('Pattern not found');
         const data = await response.json();
         console.log('Pattern data received:', data);
         
-        // The API returns an array of patterns, get the most recent one
-        const patterns = data.patterns || [];
-        if (patterns.length === 0) {
-          throw new Error('No patterns found for this word');
+        let patternData;
+        if (id) {
+          // Single pattern response
+          patternData = data.pattern;
+        } else {
+          // Array of patterns, get the most recent one
+          const patterns = data.patterns || [];
+          if (patterns.length === 0) {
+            throw new Error('No patterns found for this word');
+          }
+          patternData = patterns[0]; // Already sorted by created_at desc
         }
-        
-        const latestPattern = patterns[0]; // Already sorted by created_at desc
         
         // Transform the nested structure to flat pattern
         const transformedPattern: Pattern = {
-          word: latestPattern.word_seeds?.text || word,
-          image_url: latestPattern.word_visual_image?.image_url,
-          verbal_essence: latestPattern.word_verbal_essence?.content,
-          visual_essence: latestPattern.word_visual_essence?.content,
-          verbal_layer: latestPattern.word_verbal_layer?.content,
-          verbal_voicing: latestPattern.word_verbal_voicing?.content,
-          visual_layer: latestPattern.word_visual_layer?.content,
-          created_at: latestPattern.created_at
+          word: patternData.word_seeds?.text || word || '',
+          image_url: patternData.word_visual_image?.image_url,
+          verbal_essence: patternData.word_verbal_essence?.content,
+          visual_essence: patternData.word_visual_essence?.content,
+          verbal_layer: patternData.word_verbal_layer?.content,
+          verbal_voicing: patternData.word_verbal_voicing?.content,
+          visual_layer: patternData.word_visual_layer?.content,
+          created_at: patternData.created_at
         };
         
         setPattern(transformedPattern);
@@ -68,7 +84,7 @@ export default function PatternDetail() {
     };
 
     fetchPattern();
-  }, [word]);
+  }, [word, id]);
 
   if (loading) {
     return (
