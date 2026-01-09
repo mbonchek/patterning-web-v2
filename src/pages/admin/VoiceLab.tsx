@@ -122,12 +122,17 @@ function FormattedTraceViewer({ patternId, word }: { patternId: string; word: st
   }
 
   // Group events by step
-  const stepGroups: Record<string, any[]> = {};
+  const stepGroups: Record<string, { httpTrace?: any, stepDetail?: any, success?: any }> = {};
   trace.events.forEach((event: any) => {
-    if (event.type === 'step_detail') {
-      const step = event.step_detail?.step || 'unknown';
-      if (!stepGroups[step]) stepGroups[step] = [];
-      stepGroups[step].push(event);
+    const step = event.step || event.http_trace?.step || 'unknown';
+    if (!stepGroups[step]) stepGroups[step] = {};
+    
+    if (event.type === 'http_trace') {
+      stepGroups[step].httpTrace = event.http_trace;
+    } else if (event.type === 'step_detail') {
+      stepGroups[step].stepDetail = event;
+    } else if (event.type === 'success') {
+      stepGroups[step].success = event;
     }
   });
 
@@ -138,9 +143,8 @@ function FormattedTraceViewer({ patternId, word }: { patternId: string; word: st
         <p className="text-xs text-slate-500">Generated: {new Date(trace.created_at).toLocaleString()}</p>
       </div>
 
-      {Object.entries(stepGroups).map(([step, events], idx) => {
-        const stepDetail = events.find(e => e.step_detail)?.step_detail;
-        const httpTrace = events.find(e => e.http_trace)?.http_trace;
+      {Object.entries(stepGroups).map(([step, group], idx) => {
+        const { stepDetail, httpTrace, success } = group;
         const isExpanded = expandedSteps.has(idx);
 
         return (
@@ -151,11 +155,11 @@ function FormattedTraceViewer({ patternId, word }: { patternId: string; word: st
             >
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-xs font-bold text-teal-400 uppercase">{step}</span>
-                {stepDetail && (
+                {httpTrace && (
                   <>
                     <span className="text-[10px] text-slate-500">|</span>
-                    <span className="text-[10px] font-mono text-blue-400">{stepDetail.prompt_slug}</span>
-                    <span className="text-[10px] px-1.5 py-0.5 bg-slate-800 text-slate-300 rounded font-mono">{stepDetail.model}</span>
+                    <span className="text-[10px] font-mono text-blue-400">{httpTrace.prompt_slug}</span>
+                    <span className="text-[10px] px-1.5 py-0.5 bg-slate-800 text-slate-300 rounded font-mono">{httpTrace.model}</span>
                   </>
                 )}
               </div>
@@ -189,13 +193,13 @@ function FormattedTraceViewer({ patternId, word }: { patternId: string; word: st
                     </div>
                   )}
                   
-                  {stepDetail?.config && (
+                  {httpTrace?.requestBody && (
                     <div className="ml-4">
                       <p className="text-[10px] text-slate-500 uppercase font-bold mb-1">Config</p>
                       <div className="text-[10px] text-slate-400 bg-slate-900/80 p-2 rounded border border-slate-800 font-mono">
-                        {Object.entries(stepDetail.config).map(([key, value]) => (
-                          <div key={key}><span className="text-slate-500">{key}:</span> {JSON.stringify(value)}</div>
-                        ))}
+                        <div><span className="text-slate-500">temperature:</span> {httpTrace.requestBody.temperature}</div>
+                        <div><span className="text-slate-500">max_tokens:</span> {httpTrace.requestBody.max_tokens}</div>
+                        <div><span className="text-slate-500">model:</span> {httpTrace.requestBody.model}</div>
                       </div>
                     </div>
                   )}
@@ -214,10 +218,10 @@ function FormattedTraceViewer({ patternId, word }: { patternId: string; word: st
                     <p className="text-xs text-teal-400 uppercase font-bold">Output</p>
                   </div>
                   
-                  {httpTrace?.responseBody?.content && (
+                  {success?.data?.content && (
                     <div className="ml-4">
                       <div className="text-[11px] text-teal-300 bg-slate-900/80 p-3 rounded border border-teal-900/30 whitespace-pre-wrap max-h-96 overflow-y-auto">
-                        {httpTrace.responseBody.content}
+                        {success.data.content}
                       </div>
                     </div>
                   )}
