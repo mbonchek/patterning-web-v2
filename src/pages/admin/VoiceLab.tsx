@@ -427,12 +427,13 @@ export function VoiceLab() {
         </button>
       </div>
 
-      {logs.length > 0 && (
+      {(logs.length > 0 || history.length > 0) && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-1 space-y-6">
-            <div className="space-y-3">
-              <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider">Queue</h2>
-              {logs.map((log, idx) => (
+            {logs.length > 0 && (
+              <div className="space-y-3">
+                <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider">Queue</h2>
+                {logs.map((log, idx) => (
               <div
                 key={idx}
                 onClick={() => setSelectedLog(log)}
@@ -448,8 +449,9 @@ export function VoiceLab() {
                 </div>
                 <p className="text-xs text-slate-400 truncate">{log.message}</p>
               </div>
-            ))}
-            </div>
+                ))}
+              </div>
+            )}
             
             {/* History Section */}
             {!isProcessing && history.length > 0 && (
