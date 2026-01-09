@@ -226,4 +226,12 @@ None currently.
 
 ---
 
-**Last updated:** 2026-01-08 (evening session)
+## Recent Accomplishments
+
+### 2026-01-08 (Late Evening)
+- **Fixed pattern detail page routing:** Changed from word-based (`/{word}`) to ID-based (`/pattern/word/{id}`) routing
+- **Added `/api/pattern/word/{id}` endpoint:** Returns specific pattern by ID
+- **Updated PatternDetail component:** Now handles both ID and word routing
+- **Documented conceptual architecture:** Seeds vs Patterns, pattern types, routing strategies
+
+**Last updated:** 2026-01-08 (late evening session)

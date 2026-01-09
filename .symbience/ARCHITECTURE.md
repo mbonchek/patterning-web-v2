@@ -16,6 +16,64 @@ Patterning.ai is a sophisticated AI-powered word pattern generation platform tha
 
 ---
 
+## Conceptual Architecture
+
+### Pattern Types
+
+Patterning.ai is designed to support multiple **pattern types**, each with its own generation pipeline and data structure:
+
+- **Word Patterns** (`patterns_word`) - Multi-layered verbal and visual interpretations of words
+- **Song Patterns** (`patterns_song`) - Future: Musical patterns (not yet implemented)
+- **Other Pattern Types** - Extensible architecture for new pattern types
+
+### Seeds vs Patterns
+
+**Seed:** The input that starts the generation process
+- For word patterns: the word text (e.g., "ghost", "love")
+- Stored in `word_seeds` table
+- One seed can have multiple patterns
+
+**Pattern:** A complete generated artifact
+- One specific generation run for a seed
+- Includes all layers: verbal_layer, verbal_voicing, verbal_essence, visual_layer, visual_essence, visual_image
+- Stored in `patterns_word` table with foreign keys to all element tables
+- Each pattern has a unique ID and timestamp
+
+**Why multiple patterns per seed?**
+- Users can regenerate the same word with different prompts/models
+- Experimentation and iteration
+- Version history
+- A/B testing different approaches
+
+### Pattern Routing
+
+**By Pattern ID (specific):**
+- Route: `/pattern/word/{id}`
+- API: `/api/pattern/word/{id}`
+- Returns: One specific pattern with all its elements
+- Use case: Clicking a pattern card in the Library
+
+**By Word (latest):**
+- Route: `/{word}`
+- API: `/api/word/{word}`
+- Returns: All patterns for that word (sorted by created_at desc)
+- Use case: Public-facing word pages, showing most recent pattern
+
+**Library View:**
+- Shows all patterns across all seeds
+- Can mix word patterns and song patterns (future)
+- Each card links to the specific pattern by ID
+
+### Element Reuse
+
+Elements (verbal_layer, visual_image, etc.) can theoretically be shared across patterns, though in practice each pattern generates its own elements. The database design supports reuse:
+
+- Pattern deletion checks for orphaned elements
+- Only deletes elements not referenced by other patterns
+- This enables future optimizations (e.g., caching, deduplication)
+
+---
+
 ## The 7-Step Pipeline
 
 Each word goes through 7 generation steps, each producing a specific output:
