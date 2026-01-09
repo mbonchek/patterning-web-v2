@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Mic2, Play, AlertCircle, CheckCircle, Loader2, ChevronRight, ChevronDown } from 'lucide-react';
 
 interface HttpTrace {
@@ -197,7 +197,6 @@ export function VoiceLab() {
   const [selectedLog, setSelectedLog] = useState<LogEntry | null>(null);
   const [selectedHistory, setSelectedHistory] = useState<HistoryEntry | null>(null);
   const [expandedHttpTraces, setExpandedHttpTraces] = useState<Set<number>>(new Set());
-  const [loadingHistory, setLoadingHistory] = useState(false);
 
   // Load history on mount
   useEffect(() => {
@@ -217,7 +216,6 @@ export function VoiceLab() {
   }, [selectedLog?.status]);
 
   const fetchHistory = async () => {
-    setLoadingHistory(true);
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/generations/history?limit=50`);
       if (res.ok) {
@@ -226,8 +224,6 @@ export function VoiceLab() {
       }
     } catch (error) {
       console.error('Failed to load history:', error);
-    } finally {
-      setLoadingHistory(false);
     }
   };
 
