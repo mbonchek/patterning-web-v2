@@ -61,12 +61,175 @@ interface LogEntry {
   savedEvents: SavedEvent[];
 }
 
+interface HistoryEntry {
+  id: string;
+  pattern_id?: string;
+  word: string;
+  created_at: string;
+  has_trace: boolean;
+}
+
+function FormattedTraceViewer({ patternId, word }: { patternId: string; word: string }) {
+  const [trace, setTrace] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [expandedSteps, setExpandedSteps] = useState<Set<number>>(new Set());
+
+  useEffect(() => {
+    fetchTrace();
+  }, [patternId]);
+
+  const fetchTrace = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/pattern/${patternId}/trace`);
+      if (res.ok) {
+        const data = await res.json();
+        setTrace(data);
+      }
+    } catch (error) {
+      console.error('Failed to load trace:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const toggleStep = (idx: number) => {
+    setExpandedSteps(prev => {
+      const next = new Set(prev);
+      if (next.has(idx)) {
+        next.delete(idx);
+      } else {
+        next.add(idx);
+      }
+      return next;
+    });
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="animate-spin text-teal-400" size={32} />
+      </div>
+    );
+  }
+
+  if (!trace || !trace.events) {
+    return (
+      <div className="text-center py-12 text-slate-600 italic border border-slate-800 border-dashed rounded-xl">
+        No trace data available for this pattern.
+      </div>
+    );
+  }
+
+  // Group events by step
+  const stepGroups: Record<string, any[]> = {};
+  trace.events.forEach((event: any) => {
+    if (event.type === 'step_detail') {
+      const step = event.step_detail?.step || 'unknown';
+      if (!stepGroups[step]) stepGroups[step] = [];
+      stepGroups[step].push(event);
+    }
+  });
+
+  return (
+    <div className="space-y-3">
+      <div className="p-4 bg-slate-900/50 border border-slate-800 rounded-lg">
+        <h3 className="text-lg font-bold text-white mb-1">{word}</h3>
+        <p className="text-xs text-slate-500">Generated: {new Date(trace.created_at).toLocaleString()}</p>
+      </div>
+
+      {Object.entries(stepGroups).map(([step, events], idx) => {
+        const stepDetail = events.find(e => e.step_detail)?.step_detail;
+        const httpTrace = events.find(e => e.http_trace)?.http_trace;
+        const isExpanded = expandedSteps.has(idx);
+
+        return (
+          <div key={idx} className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+            <button
+              onClick={() => toggleStep(idx)}
+              className="w-full flex items-center justify-between p-3 hover:bg-slate-800/50 transition-colors"
+            >
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-xs font-bold text-teal-400 uppercase">{step}</span>
+                {stepDetail && (
+                  <>
+                    <span className="text-[10px] text-slate-500">|</span>
+                    <span className="text-[10px] font-mono text-blue-400">{stepDetail.prompt_slug}</span>
+                    <span className="text-[10px] px-1.5 py-0.5 bg-slate-800 text-slate-300 rounded font-mono">{stepDetail.model}</span>
+                  </>
+                )}
+              </div>
+              {isExpanded ? <ChevronDown size={16} className="text-slate-400" /> : <ChevronRight size={16} className="text-slate-400" />}
+            </button>
+
+            {isExpanded && (
+              <div className="p-4 border-t border-slate-800 space-y-3 bg-slate-950/50">
+                {stepDetail && (
+                  <div>
+                    <p className="text-[10px] text-slate-500 uppercase font-bold mb-2">Prompt Configuration</p>
+                    <pre className="text-[11px] text-slate-300 bg-slate-950 p-2 rounded border border-slate-800 overflow-x-auto whitespace-pre-wrap max-h-40 overflow-y-auto">
+                      {JSON.stringify(stepDetail.config, null, 2)}
+                    </pre>
+                  </div>
+                )}
+                {httpTrace && (
+                  <div>
+                    <p className="text-[10px] text-slate-500 uppercase font-bold mb-2">Response</p>
+                    <pre className="text-[11px] text-teal-400 bg-slate-950 p-2 rounded border border-slate-800 overflow-x-auto whitespace-pre-wrap max-h-60 overflow-y-auto">
+                      {JSON.stringify(httpTrace.responseBody, null, 2)}
+                    </pre>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export function VoiceLab() {
   const [inputWords, setInputWords] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [logs, setLogs] = useState<LogEntry[]>([]);
+  const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [selectedLog, setSelectedLog] = useState<LogEntry | null>(null);
+  const [selectedHistory, setSelectedHistory] = useState<HistoryEntry | null>(null);
   const [expandedHttpTraces, setExpandedHttpTraces] = useState<Set<number>>(new Set());
+  const [loadingHistory, setLoadingHistory] = useState(false);
+
+  // Load history on mount
+  useEffect(() => {
+    fetchHistory();
+  }, []);
+
+  // Auto-refresh selected log during processing
+  useEffect(() => {
+    if (!selectedLog || selectedLog.status !== 'processing') return;
+
+    const interval = setInterval(() => {
+      // Force re-render to show updated trace
+      setSelectedLog(prev => prev ? { ...prev } : null);
+    }, 500);
+
+    return () => clearInterval(interval);
+  }, [selectedLog?.status]);
+
+  const fetchHistory = async () => {
+    setLoadingHistory(true);
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/generations/history?limit=50`);
+      if (res.ok) {
+        const data = await res.json();
+        setHistory(data.patterns || []);
+      }
+    } catch (error) {
+      console.error('Failed to load history:', error);
+    } finally {
+      setLoadingHistory(false);
+    }
+  };
 
   const handleStart = async () => {
     const words = inputWords
@@ -185,6 +348,8 @@ export function VoiceLab() {
                   log.message = 'Generation complete';
                   log.data = data.data;
                   log.pattern_id = data.pattern_id;
+                  // Refresh history to show new generation
+                  fetchHistory();
                 } else if (data.type === 'error') {
                   log.status = 'error';
                   log.message = data.message;
@@ -263,9 +428,10 @@ export function VoiceLab() {
 
       {logs.length > 0 && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-1 space-y-3">
-            <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider">Queue</h2>
-            {logs.map((log, idx) => (
+          <div className="lg:col-span-1 space-y-6">
+            <div className="space-y-3">
+              <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider">Queue</h2>
+              {logs.map((log, idx) => (
               <div
                 key={idx}
                 onClick={() => setSelectedLog(log)}
@@ -282,17 +448,46 @@ export function VoiceLab() {
                 <p className="text-xs text-slate-400 truncate">{log.message}</p>
               </div>
             ))}
+            </div>
+            
+            {/* History Section */}
+            {!isProcessing && history.length > 0 && (
+              <div className="space-y-3">
+                <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider">Recent History</h2>
+                <div className="space-y-2 max-h-[40vh] overflow-y-auto">
+                  {history.slice(0, 20).map((item) => (
+                    <div
+                      key={item.id}
+                      onClick={() => setSelectedHistory(item)}
+                      className={`p-3 rounded-lg border cursor-pointer transition-all text-sm ${
+                        selectedHistory?.id === item.id ? 'border-teal-500 bg-teal-900/20' : 'border-slate-800 bg-slate-900/30 hover:border-slate-700'
+                      }`}
+                    >
+                      <div className="flex justify-between items-center">
+                        <span className="font-bold text-white text-sm">{item.word}</span>
+                        {item.has_trace && (
+                          <span className="text-[10px] px-2 py-0.5 bg-teal-900/50 text-teal-400 rounded">TRACE</span>
+                        )}
+                      </div>
+                      <p className="text-[10px] text-slate-500 mt-1">
+                        {new Date(item.created_at).toLocaleString()}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="lg:col-span-2 space-y-4 overflow-y-auto max-h-[80vh]">
             <div className="flex justify-between items-center">
               <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider">Pipeline Trace</h2>
-              {selectedLog?.pattern_id && (
+              {(selectedLog?.pattern_id || selectedHistory?.id) && (
                 <button
-                  onClick={() => window.open(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/pattern/${selectedLog.pattern_id}/trace`, '_blank')}
+                  onClick={() => window.open(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/pattern/${selectedLog?.pattern_id || selectedHistory?.id}/trace`, '_blank')}
                   className="text-xs px-3 py-1.5 bg-teal-900/30 text-teal-400 border border-teal-900/50 rounded hover:bg-teal-900/50 transition-all"
                 >
-                  View Full Trace
+                  View Raw JSON
                 </button>
               )}
             </div>
@@ -414,9 +609,11 @@ export function VoiceLab() {
                   </div>
                 )}
               </div>
+            ) : selectedHistory ? (
+              <FormattedTraceViewer patternId={selectedHistory.id} word={selectedHistory.word} />
             ) : (
               <div className="text-center py-20 text-slate-600 italic border border-slate-800 border-dashed rounded-xl">
-                Select a word from the queue to view its generation DNA.
+                Select a word from the queue or history to view its generation trace.
               </div>
             )}
           </div>
