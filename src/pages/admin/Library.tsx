@@ -19,6 +19,7 @@ import {
 
 interface Pattern {
   id: string;
+  pattern_id?: string;
   word: string;
   verbal_layer: string | null;
   verbal_voicing: string | null;
@@ -296,8 +297,13 @@ export function Library() {
                   </div>
                 </div>
 
-                <div className="text-xs text-slate-500 mt-auto">
-                  {new Date(pattern.created_at).toLocaleDateString()}
+                <div className="text-xs text-slate-500 mt-auto space-y-1">
+                  <div>{new Date(pattern.created_at).toLocaleDateString()}</div>
+                  {pattern.pattern_id && (
+                    <div className="font-mono text-[10px] text-slate-600">
+                      ID: {pattern.pattern_id}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
