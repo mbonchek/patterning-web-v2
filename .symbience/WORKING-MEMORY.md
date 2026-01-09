@@ -234,4 +234,14 @@ None currently.
 - **Updated PatternDetail component:** Now handles both ID and word routing
 - **Documented conceptual architecture:** Seeds vs Patterns, pattern types, routing strategies
 
+### 2026-01-08 (Late Evening - Pattern Cleanup)
+- **Identified root cause of image mismatch:** Pattern generation was creating correct images but linking patterns to wrong visual_image records
+- **Example:** Ghost pattern (1/9/2026) created `ghost_1767916950.jpg` but pattern linked to `start_1767888326.jpg`
+- **Solution:** Deleted all pattern data (67 records total) while preserving seeds and prompts
+- **Preserved:** 7 seed words (beginning, wait, juicy, start, love, ghost, poltergeist)
+- **Preserved:** All prompt versions (system, word_verbal_layer, word_verbal_essence, etc.)
+- **Ready for:** Fresh pattern generation with correct image linking
+
+**Key Learning:** The bug is in the pattern generation code where it creates the final `patterns_word` record - it's not correctly capturing the newly created visual_image_id.
+
 **Last updated:** 2026-01-08 (late evening session)
