@@ -31,7 +31,7 @@ const PIPELINE_STEPS = [
   { code: 'vevc', label: 'Voicing', color: 'bg-cyan-500' },
   { code: 'vees', label: 'Verbal Essence', color: 'bg-cyan-600' },
   { code: 'vily', label: 'Visual Layer', color: 'bg-purple-500' },
-  { code: 'vies', label: 'Visual Essence', color: 'bg-purple-600' },
+  { code: 'vibr', label: 'Visual Brief', color: 'bg-purple-600' },
   { code: 'viim', label: 'Image', color: 'bg-pink-500' },
 ];
 

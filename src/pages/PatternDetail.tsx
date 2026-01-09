@@ -7,7 +7,7 @@ interface Pattern {
   word: string;
   image_url?: string;
   verbal_essence?: string;
-  visual_essence?: string;
+  visual_brief?: string;
   verbal_layer?: string;
   verbal_voicing?: string;
   visual_layer?: string;
@@ -70,7 +70,7 @@ export default function PatternDetail() {
           word: patternData.word_seeds?.text || word || '',
           image_url: patternData.word_visual_image?.image_url,
           verbal_essence: patternData.word_verbal_essence?.content,
-          visual_essence: patternData.word_visual_essence?.content,
+          visual_brief: patternData.word_visual_brief?.content,
           verbal_layer: patternData.word_verbal_layer?.content,
           verbal_voicing: patternData.word_verbal_voicing?.content,
           visual_layer: patternData.word_visual_layer?.content,
@@ -165,12 +165,12 @@ export default function PatternDetail() {
             </div>
           )}
           
-          {/* Visual Essence */}
-          {pattern.visual_essence && (
+          {/* Visual Brief */}
+          {pattern.visual_brief && (
             <div className="bg-[#1a1f2e]/60 backdrop-blur-sm rounded-2xl p-8 border border-[#7c4dff]/30 shadow-lg shadow-[#7c4dff]/10">
-              <h2 className="text-2xl font-serif font-semibold text-[#7c4dff] mb-4">Visual Essence</h2>
+              <h2 className="text-2xl font-serif font-semibold text-[#7c4dff] mb-4">Visual Brief</h2>
               <p className="text-gray-200 text-lg leading-relaxed font-sans">
-                {pattern.visual_essence}
+                {pattern.visual_brief}
               </p>
             </div>
           )}
