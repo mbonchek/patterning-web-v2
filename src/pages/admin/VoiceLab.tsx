@@ -55,6 +55,7 @@ interface LogEntry {
   message: string;
   step?: string;
   data?: any;
+  pattern_id?: string;
   httpTraces: HttpTrace[];
   stepDetails: StepDetail[];
   savedEvents: SavedEvent[];
@@ -183,6 +184,7 @@ export function VoiceLab() {
                   log.status = 'success';
                   log.message = 'Generation complete';
                   log.data = data.data;
+                  log.pattern_id = data.pattern_id;
                 } else if (data.type === 'error') {
                   log.status = 'error';
                   log.message = data.message;
@@ -283,7 +285,17 @@ export function VoiceLab() {
           </div>
 
           <div className="lg:col-span-2 space-y-4 overflow-y-auto max-h-[80vh]">
-            <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider">Pipeline Trace</h2>
+            <div className="flex justify-between items-center">
+              <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider">Pipeline Trace</h2>
+              {selectedLog?.pattern_id && (
+                <button
+                  onClick={() => window.open(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/pattern/${selectedLog.pattern_id}/trace`, '_blank')}
+                  className="text-xs px-3 py-1.5 bg-teal-900/30 text-teal-400 border border-teal-900/50 rounded hover:bg-teal-900/50 transition-all"
+                >
+                  View Full Trace
+                </button>
+              )}
+            </div>
             {selectedLog ? (
               <div className="space-y-3">
                 {/* Step-by-step timeline */}
