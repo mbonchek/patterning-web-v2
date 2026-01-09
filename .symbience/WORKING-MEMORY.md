@@ -245,3 +245,145 @@ None currently.
 **Key Learning:** The bug is in the pattern generation code where it creates the final `patterns_word` record - it's not correctly capturing the newly created visual_image_id.
 
 **Last updated:** 2026-01-08 (late evening session)
+
+
+---
+
+## Recent Updates (2026-01-09)
+
+### PatternID System Implemented ✅
+
+**What:** Comprehensive reference system using base62-encoded short IDs
+
+**Key Features:**
+- Each pattern has unique `pattern_id` (8 chars, base62)
+- Each element has unique `elid` (8 chars, base62)
+- Seeds have unique `sdid` (8 chars, base62)
+- Pattern reference format: `word.{sdid}.{element_code}:{elid}...`
+- Element codes: `vely`, `vevc`, `vees`, `vily`, `vies`, `viim`
+
+**Database Changes:**
+- Added `sdid` column to `word_seeds`
+- Added `elid` column to all element tables
+- Added `pattern_ref` column to `patterns_word`
+- Added `pattern_id` column to `patterns_word`
+- All columns indexed for fast lookups
+
+**Documentation:** See `.symbience/PATTERNID.md`
+
+### Generation Traces System ✅
+
+**What:** Debugging and quality assurance for pattern generation
+
+**Key Features:**
+- Stores complete generation pipeline (prompts, configs, responses)
+- 30-day retention policy
+- JSONB storage for flexible querying
+- Auto-cleanup after 30 days
+
+**Database:**
+- New table: `generation_traces`
+- Links to `patterns_word` via `pattern_id`
+- Cascading delete when pattern is deleted
+
+**API Endpoints:**
+- `GET /api/pattern/<pattern_id>/trace` - Get trace for pattern
+- `GET /api/generations/history?limit=50` - Get recent patterns with traces
+
+**Documentation:** See `.symbience/TRACES.md`
+
+### Voice Lab Enhancements ✅
+
+**Persistent History:**
+- Loads recent 50 generations on page mount
+- Shows "TRACE" badge for patterns with available traces
+- Auto-refreshes after new generation completes
+- Displays word, timestamp, and trace availability
+
+**Formatted Trace Viewer:**
+- Click history item to view formatted trace
+- Expandable steps showing prompts, configs, responses
+- "View Raw JSON" button for complete trace
+- Syntax-highlighted, readable format
+
+**Auto-Refresh:**
+- Pipeline trace updates every 500ms during generation
+- Real-time progress visibility
+- Smooth user experience
+
+### Trace Analysis Tool ✅
+
+**Script:** `/home/ubuntu/analyze_trace.py`
+
+**Purpose:** Quality checking and truncation detection
+
+**Features:**
+- Fetches full element content (not truncated)
+- Shows prompt configuration per step
+- Detects truncation issues
+- Readable formatting for review
+- Character counts and token usage
+
+**Usage:**
+```bash
+# Most recent pattern
+python3 analyze_trace.py
+
+# Specific pattern
+python3 analyze_trace.py <pattern_id>
+```
+
+### Token Limit Adjustments ✅
+
+**Changes Made:**
+- `verbal_layer`: 1000 → **2000 tokens**
+- `visual_layer`: 800 → **1500 tokens**
+
+**Reason:** Comprehensive content was being truncated
+
+**Verification:**
+- Ran analysis tool on recent "ghost" pattern
+- All elements completing successfully
+- No truncation detected
+- Proper endings on all content
+
+**Current Status:** All token limits are sufficient ✅
+
+### Bug Fixes ✅
+
+1. **Backend crash on import** - Fixed PatternManager table name references
+2. **Delete functionality** - Fixed `seeds` → `word_seeds` reference
+3. **Image linking bug** - Resolved by PatternID system implementation
+4. **Pattern cleanup** - Deleted all patterns, kept seeds and prompts
+
+---
+
+## Active Issues
+
+None currently. System is stable and functioning well.
+
+---
+
+## Next Steps
+
+### Short-term
+1. Test PatternID system with multiple generations
+2. Monitor trace storage and cleanup
+3. Verify library cards display pattern_id correctly
+4. Test pattern detail page with new routing
+
+### Medium-term
+1. Implement URL shortener for pattern sharing (`givevoice.to/word.ID`)
+2. Add pattern_id to pattern detail page footer
+3. Create trace comparison tool for A/B testing prompts
+4. Add automated truncation detection alerts
+
+### Long-term
+1. Song pattern type implementation
+2. Lemma system for word variations
+3. Cross-pattern references and remixes
+4. Token usage dashboard and cost tracking
+
+---
+
+**Last updated:** 2026-01-09 09:00 UTC

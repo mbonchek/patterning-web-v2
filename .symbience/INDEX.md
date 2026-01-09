@@ -77,6 +77,23 @@ Code review standards:
 - API design
 - Error handling
 
+### PATTERNID.md
+Pattern reference system:
+- Base62 encoding for short IDs
+- Element code structure
+- Pattern reference format
+- Database schema
+- URL usage
+
+### TRACES.md
+Generation traces system:
+- Trace structure and storage
+- API endpoints
+- Voice Lab integration
+- Analysis tool usage
+- Token limit configuration
+- Truncation detection
+
 ---
 
 ## Maintenance
@@ -128,4 +145,4 @@ Use `SYMBIENCE OPTIMIZE` to:
 
 Run this periodically to keep protocols clean and relevant.
 
-**Last updated:** 2026-01-08
+**Last updated:** 2026-01-09
