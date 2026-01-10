@@ -59,6 +59,17 @@ interface LogEntry {
   httpTraces: HttpTrace[];
   stepDetails: StepDetail[];
   savedEvents: SavedEvent[];
+  // Track progress for parallel execution
+  verbalTrack?: {
+    status: 'pending' | 'processing' | 'complete' | 'error';
+    step?: string;
+    message?: string;
+  };
+  visualTrack?: {
+    status: 'pending' | 'processing' | 'complete' | 'error';
+    step?: string;
+    message?: string;
+  };
 }
 
 interface HistoryEntry {
@@ -298,7 +309,12 @@ export function VoiceLab() {
       message: 'Waiting...', 
       httpTraces: [],
       stepDetails: [],
-      savedEvents: []
+      savedEvents: [],
+      // Initialize track states for parallel execution
+      ...(trackSelection === 'both' ? {
+        verbalTrack: { status: 'pending' as const, message: 'Waiting...' },
+        visualTrack: { status: 'pending' as const, message: 'Waiting...' }
+      } : {})
     }));
     setLogs(initialLogs);
 
@@ -348,6 +364,24 @@ export function VoiceLab() {
                 if (data.type === 'step') {
                   log.step = data.step;
                   log.message = data.message;
+                  
+                  // Track verbal and visual steps separately for parallel execution
+                  const verbalSteps = ['verbal_layer', 'verbal_voicing', 'verbal_essence'];
+                  const visualSteps = ['visual_layer', 'visual_brief', 'image'];
+                  
+                  if (verbalSteps.includes(data.step)) {
+                    log.verbalTrack = {
+                      status: 'processing',
+                      step: data.step,
+                      message: data.message
+                    };
+                  } else if (visualSteps.includes(data.step)) {
+                    log.visualTrack = {
+                      status: 'processing',
+                      step: data.step,
+                      message: data.message
+                    };
+                  }
                 } else if (data.type === 'step_detail') {
                   // Capture detailed step information
                   const stepDetail: StepDetail = {
@@ -392,6 +426,16 @@ export function VoiceLab() {
                   }
                 } else if (data.type === 'success') {
                   log.message = `Completed ${data.step}`;
+                  
+                  // Mark track as complete
+                  const verbalSteps = ['verbal_layer', 'verbal_voicing', 'verbal_essence'];
+                  const visualSteps = ['visual_layer', 'visual_brief', 'image'];
+                  
+                  if (verbalSteps.includes(data.step) && log.verbalTrack) {
+                    log.verbalTrack.status = 'complete';
+                  } else if (visualSteps.includes(data.step) && log.visualTrack) {
+                    log.visualTrack.status = 'complete';
+                  }
                 } else if (data.type === 'complete') {
                   log.status = 'success';
                   log.message = 'Generation complete';
@@ -547,7 +591,26 @@ export function VoiceLab() {
                   {log.status === 'success' && <CheckCircle className="text-green-400" size={14} />}
                   {log.status === 'error' && <AlertCircle className="text-red-400" size={14} />}
                 </div>
-                <p className="text-xs text-slate-400 truncate">{log.message}</p>
+                
+                {/* Show dual tracks if both are present */}
+                {log.verbalTrack && log.visualTrack ? (
+                  <div className="space-y-2 mt-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-semibold text-purple-400 uppercase">Verbal:</span>
+                      {log.verbalTrack.status === 'processing' && <Loader2 className="text-purple-400 animate-spin" size={10} />}
+                      {log.verbalTrack.status === 'complete' && <CheckCircle className="text-green-400" size={10} />}
+                      <span className="text-xs text-slate-400 truncate flex-1">{log.verbalTrack.message || log.verbalTrack.step}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-semibold text-cyan-400 uppercase">Visual:</span>
+                      {log.visualTrack.status === 'processing' && <Loader2 className="text-cyan-400 animate-spin" size={10} />}
+                      {log.visualTrack.status === 'complete' && <CheckCircle className="text-green-400" size={10} />}
+                      <span className="text-xs text-slate-400 truncate flex-1">{log.visualTrack.message || log.visualTrack.step}</span>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-xs text-slate-400 truncate">{log.message}</p>
+                )}
               </div>
                 ))}
               </div>
