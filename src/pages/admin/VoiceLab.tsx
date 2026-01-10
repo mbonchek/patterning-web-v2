@@ -900,9 +900,6 @@ export function VoiceLab() {
                   <div className="text-sm text-slate-400 mb-2">Parallel Runs</div>
                   <div className="text-3xl font-bold text-teal-400">{analyticsSummary.parallel_runs.count}</div>
                   <div className="text-sm text-slate-500 mt-2">
-                    Avg Speedup: <span className="text-teal-400 font-semibold">{analyticsSummary.parallel_runs.avg_speedup.toFixed(2)}x</span>
-                  </div>
-                  <div className="text-sm text-slate-500">
                     Avg Duration: {(analyticsSummary.parallel_runs.avg_duration_ms / 1000).toFixed(1)}s
                   </div>
                   <div className="text-sm text-slate-500">
@@ -945,7 +942,6 @@ export function VoiceLab() {
                           <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">Verbal</th>
                           <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">Visual</th>
                           <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">Parallel</th>
-                          <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">Speedup</th>
                           <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">Cost</th>
                         </tr>
                       </thead>
@@ -956,7 +952,6 @@ export function VoiceLab() {
                             <td className="px-4 py-3 text-purple-400">{(run.verbal_track_ms / 1000).toFixed(1)}s</td>
                             <td className="px-4 py-3 text-cyan-400">{(run.visual_track_ms / 1000).toFixed(1)}s</td>
                             <td className="px-4 py-3 text-teal-400">{(run.actual_parallel_ms / 1000).toFixed(1)}s</td>
-                            <td className="px-4 py-3 text-green-400 font-semibold">{run.speedup.toFixed(2)}x</td>
                             <td className="px-4 py-3 text-white">${run.total_cost.toFixed(4)}</td>
                           </tr>
                         ))}
@@ -977,16 +972,42 @@ export function VoiceLab() {
                       const steps = run.steps || [];
                       const isExpanded = expandedRuns.has(idx);
                       
-                      const toggleExpanded = () => {
-                        setExpandedRuns(prev => {
-                          const next = new Set(prev);
-                          if (next.has(idx)) {
+                      const toggleExpanded = async () => {
+                        const isCurrentlyExpanded = expandedRuns.has(idx);
+                        
+                        if (isCurrentlyExpanded) {
+                          // Just collapse
+                          setExpandedRuns(prev => {
+                            const next = new Set(prev);
                             next.delete(idx);
-                          } else {
-                            next.add(idx);
+                            return next;
+                          });
+                        } else {
+                          // Expand and fetch details if not already loaded
+                          setExpandedRuns(prev => new Set(prev).add(idx));
+                          
+                          if (!run.steps || run.steps.length === 0) {
+                            // Fetch full run details
+                            try {
+                              const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/analytics/pattern-runs/${run.id}`);
+                              if (res.ok) {
+                                const data = await res.json();
+                                if (data.success && data.run) {
+                                  // Update the run with full details
+                                  run.steps = data.run.steps;
+                                  run.total_input_tokens = data.run.total_input_tokens;
+                                  run.total_output_tokens = data.run.total_output_tokens;
+                                  run.total_tokens = data.run.total_tokens;
+                                  run.total_cost = data.run.total_cost;
+                                  // Force re-render
+                                  setAnalyticsSummary({...analyticsSummary});
+                                }
+                              }
+                            } catch (error) {
+                              console.error('Failed to fetch run details:', error);
+                            }
                           }
-                          return next;
-                        });
+                        }
                       };
                       
                       return (
