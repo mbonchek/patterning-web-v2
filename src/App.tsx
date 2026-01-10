@@ -8,6 +8,7 @@ import { BriefLab } from './pages/admin/BriefLab';
 import { ImageLab } from './pages/admin/ImageLab';
 import { VoiceLab } from './pages/admin/VoiceLab';
 import Branching from './pages/admin/Branching';
+import PatternPlay from './pages/admin/PatternPlay';
 import PatternDetail from './pages/PatternDetail';
 import Gallery from './pages/public/Gallery';
 
@@ -28,6 +29,7 @@ function App() {
               <Route path="prompts/:id" element={<PromptEditor />} />
               <Route path="voice" element={<VoiceLab />} />
               <Route path="branching" element={<Branching />} />
+              <Route path="pattern-play" element={<PatternPlay />} />
               <Route path="test-brief" element={<BriefLab />} />
               <Route path="test-image" element={<ImageLab />} />
               <Route path="playground" element={<div className="text-white">Playground (Coming Soon)</div>} />

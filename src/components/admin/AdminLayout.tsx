@@ -20,6 +20,7 @@ const navItems = [
   { name: 'Prompts', href: '/admin/prompts', icon: FileText },
   { name: 'Voice Lab', href: '/admin/voice', icon: Mic2 },
   { name: 'Branching', href: '/admin/branching', icon: GitBranch },
+  { name: 'PatternPlay', href: '/admin/pattern-play', icon: Play },
   { name: 'Brief Lab', href: '/admin/test-brief', icon: FileText },
   { name: 'Image Lab', href: '/admin/test-image', icon: ImageIcon },
   { name: 'Playground', href: '/admin/playground', icon: Play },
