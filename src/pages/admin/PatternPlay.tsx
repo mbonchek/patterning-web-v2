@@ -108,12 +108,19 @@ export default function PatternPlay() {
     try {
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080';
       
-      // Load voicing prompt from database
-      const response = await fetch(`${apiUrl}/api/prompts/word_verbal_voicing`);
-      if (response.ok) {
-        const data = await response.json();
-        setPatterningSystemPrompt(data.system || data.system_template || '');
-        setPatterningUserPrompt(data.template || '');
+      // Load system prompt from 'system' slug
+      const systemResponse = await fetch(`${apiUrl}/api/prompts/system`);
+      if (systemResponse.ok) {
+        const systemData = await systemResponse.json();
+        // System prompt is stored in the 'template' field for the 'system' slug
+        setPatterningSystemPrompt(systemData.template || '');
+      }
+      
+      // Load user prompt from 'word_verbal_voicing' slug
+      const voicingResponse = await fetch(`${apiUrl}/api/prompts/word_verbal_voicing`);
+      if (voicingResponse.ok) {
+        const voicingData = await voicingResponse.json();
+        setPatterningUserPrompt(voicingData.template || '');
       }
     } catch (error) {
       console.error('Error loading Patterning prompts:', error);
