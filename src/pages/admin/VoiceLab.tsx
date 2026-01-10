@@ -851,7 +851,17 @@ export function VoiceLab() {
             <>
               {/* Pricing Reference */}
               <div>
-                <h2 className="text-xl font-bold mb-4 text-white">Model Pricing Reference</h2>
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-bold text-white">Model Pricing Reference</h2>
+                  <div className="flex gap-3 text-sm">
+                    <a href="https://platform.claude.com/docs/en/about-claude/pricing" target="_blank" rel="noopener noreferrer" className="text-teal-400 hover:text-teal-300 underline">
+                      Claude Pricing →
+                    </a>
+                    <a href="https://ai.google.dev/gemini-api/docs/pricing" target="_blank" rel="noopener noreferrer" className="text-teal-400 hover:text-teal-300 underline">
+                      Gemini Pricing →
+                    </a>
+                  </div>
+                </div>
                 <div className="bg-slate-900 rounded-lg border border-slate-800 overflow-hidden">
                   <table className="w-full">
                     <thead className="bg-slate-800">
@@ -874,9 +884,9 @@ export function VoiceLab() {
                       <tr className="hover:bg-slate-800/50">
                         <td className="px-4 py-3 font-mono text-sm text-white">gemini-3-pro-image-preview</td>
                         <td className="px-4 py-3 text-sm text-slate-400">Image</td>
-                        <td className="px-4 py-3 text-sm text-slate-600">—</td>
-                        <td className="px-4 py-3 text-sm text-slate-600">—</td>
-                        <td className="px-4 py-3 text-sm text-green-400">Free (Preview)</td>
+                        <td className="px-4 py-3 text-sm text-yellow-400">$2.00</td>
+                        <td className="px-4 py-3 text-sm text-yellow-400">$120.00 (images)</td>
+                        <td className="px-4 py-3 text-sm text-yellow-400">~$0.134-0.24/image</td>
                       </tr>
                     </tbody>
                   </table>
