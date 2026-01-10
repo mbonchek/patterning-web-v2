@@ -237,6 +237,7 @@ function FormattedTraceViewer({ patternId, word }: { patternId: string; word: st
 
 export function VoiceLab() {
   const [inputWords, setInputWords] = useState('');
+  const [trackSelection, setTrackSelection] = useState<'verbal' | 'visual' | 'both'>('both');
   const [isProcessing, setIsProcessing] = useState(false);
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [history, setHistory] = useState<HistoryEntry[]>([]);
@@ -312,7 +313,7 @@ export function VoiceLab() {
       ));
 
       try {
-        const url = `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/word/${word}/generate?collect_trace=${collectTrace}`;
+        const url = `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/word/${word}/generate?collect_trace=${collectTrace}&track=${trackSelection}`;
         const response = await fetch(url, {
           method: 'POST',
           headers: { 'Accept': 'text/event-stream' }
@@ -464,17 +465,57 @@ export function VoiceLab() {
           rows={3}
           className="w-full bg-slate-950 border border-slate-800 rounded px-4 py-3 text-white font-mono text-sm focus:border-teal-500 outline-none"
         />
-        <div className="mt-3 flex items-center gap-2">
-          <input
-            type="checkbox"
-            id="collectTrace"
+        <div className="mt-3 space-y-3">
+          <div>
+            <label className="text-sm font-semibold text-slate-300 mb-2 block">Generation Track</label>
+            <div className="flex gap-3">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="track"
+                  value="verbal"
+                  checked={trackSelection === 'verbal'}
+                  onChange={(e) => setTrackSelection(e.target.value as 'verbal')}
+                  className="w-4 h-4 text-teal-600 bg-slate-950 border-slate-700 focus:ring-teal-500"
+                />
+                <span className="text-sm text-slate-300">Verbal Only</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="track"
+                  value="visual"
+                  checked={trackSelection === 'visual'}
+                  onChange={(e) => setTrackSelection(e.target.value as 'visual')}
+                  className="w-4 h-4 text-teal-600 bg-slate-950 border-slate-700 focus:ring-teal-500"
+                />
+                <span className="text-sm text-slate-300">Visual Only</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="track"
+                  value="both"
+                  checked={trackSelection === 'both'}
+                  onChange={(e) => setTrackSelection(e.target.value as 'both')}
+                  className="w-4 h-4 text-teal-600 bg-slate-950 border-slate-700 focus:ring-teal-500"
+                />
+                <span className="text-sm text-slate-300">Both (Parallel)</span>
+              </label>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="collectTrace"
             checked={collectTrace}
             onChange={(e) => setCollectTrace(e.target.checked)}
             className="w-4 h-4 text-teal-600 bg-slate-950 border-slate-700 rounded focus:ring-teal-500"
           />
-          <label htmlFor="collectTrace" className="text-sm text-slate-400">
-            Collect generation trace (for debugging)
-          </label>
+            <label htmlFor="collectTrace" className="text-sm text-slate-400">
+              Collect generation trace (for debugging)
+            </label>
+          </div>
         </div>
         <button
           onClick={() => handleStart()}
