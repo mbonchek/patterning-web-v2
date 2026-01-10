@@ -360,7 +360,10 @@ python3 analyze_trace.py <pattern_id>
 
 ## Active Issues
 
-None currently. System is stable and functioning well.
+1. **Gemini API 400 Error** - Image generation failing with Bad Request from gemini-2.5-flash-image API
+   - Prompt template fetching works correctly
+   - Request format appears correct in debug logs
+   - Need to investigate Gemini API requirements
 
 ---
 
@@ -386,4 +389,34 @@ None currently. System is stable and functioning well.
 
 ---
 
-**Last updated:** 2026-01-09 09:00 UTC
+---
+
+## Recent Updates (2026-01-10)
+
+### Image Lab Prompt Reconstruction
+
+**Completed:**
+- ✅ Implemented prompt reconstruction in Image Lab for side-by-side comparison
+- ✅ Fetches `word_visual_image` prompt template from database on page load
+- ✅ Reconstructs original prompt by replacing {{word}} and {{visual_brief}} variables
+- ✅ Displays "Original Prompt (gemini-3-pro)" in read-only purple-bordered box
+- ✅ Shows "New Prompt (gemini-2.5-flash)" after generation in cyan-bordered box
+- ✅ Fixed select dropdown by adding controlled value prop
+
+**Implementation Details:**
+- Added `promptTemplate`, `originalPrompt`, `flashPrompt` state variables
+- Fetches template from `/api/prompts/word_visual_image` endpoint on mount
+- `reconstructPrompt()` function handles variable replacement
+- Pattern selection triggers immediate prompt reconstruction
+- Visual brief remains editable for testing variations
+
+**Files Modified:**
+- `patterning-web-v2/src/pages/admin/ImageLab.tsx`
+
+**Commits:**
+- `20e517a` - feat: Add prompt reconstruction to Image Lab for side-by-side comparison
+- `46ef8d0` - fix: Add value prop to select dropdown in Image Lab
+
+---
+
+**Last updated:** 2026-01-10 01:16 UTC
