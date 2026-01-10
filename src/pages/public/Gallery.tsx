@@ -6,10 +6,8 @@ interface Pattern {
   id: string;
   word: string;
   created_at: string;
-  visual_image: {
-    thumbnail_url: string;
-    image_url: string;
-  } | null;
+  thumbnail_url?: string;
+  image_url?: string;
 }
 
 export default function Gallery() {
@@ -38,11 +36,15 @@ export default function Gallery() {
 
   const fetchPatterns = async () => {
     try {
-      const response = await fetch('/api/patterns');
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+      const response = await fetch(`${apiUrl}/api/patterns`);
       const data = await response.json();
       
+      // Extract patterns array from response
+      const patternsList = data.patterns || [];
+      
       // Sort alphabetically by word
-      const sorted = data.sort((a: Pattern, b: Pattern) => 
+      const sorted = patternsList.sort((a: Pattern, b: Pattern) => 
         a.word.localeCompare(b.word)
       );
       
@@ -167,9 +169,9 @@ function PatternTile({ pattern, onClick }: { pattern: Pattern; onClick: () => vo
       className="group relative aspect-video bg-[#1a1f2e] rounded-lg overflow-hidden cursor-pointer border border-slate-800 hover:border-[#00f0ff]/50 transition-all duration-300 hover:shadow-[0_0_20px_rgba(0,240,255,0.3)]"
     >
       {/* Image */}
-      {pattern.visual_image?.thumbnail_url ? (
+      {pattern.thumbnail_url ? (
         <img
-          src={pattern.visual_image.thumbnail_url}
+          src={pattern.thumbnail_url}
           alt={pattern.word}
           className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
         />
@@ -203,9 +205,9 @@ function PatternListItem({ pattern, onClick }: { pattern: Pattern; onClick: () =
     >
       {/* Thumbnail */}
       <div className="w-32 h-20 flex-shrink-0 rounded overflow-hidden bg-[#0d1117]">
-        {pattern.visual_image?.thumbnail_url ? (
+        {pattern.thumbnail_url ? (
           <img
-            src={pattern.visual_image.thumbnail_url}
+            src={pattern.thumbnail_url}
             alt={pattern.word}
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
           />
