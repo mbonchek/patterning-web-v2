@@ -112,7 +112,7 @@ export default function PatternPlay() {
       const response = await fetch(`${apiUrl}/api/prompts/word_verbal_voicing`);
       if (response.ok) {
         const data = await response.json();
-        setPatterningSystemPrompt(data.system_prompt || '');
+        setPatterningSystemPrompt(data.system || data.system_template || '');
         setPatterningUserPrompt(data.template || '');
       }
     } catch (error) {
