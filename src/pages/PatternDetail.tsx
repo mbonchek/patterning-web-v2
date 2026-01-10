@@ -70,23 +70,19 @@ export default function PatternDetail() {
           };
           setPattern(transformedPattern);
         } else {
-          // Array of patterns from /api/word/:word (nested structure)
-          const patterns = data.patterns || [];
-          if (patterns.length === 0) {
-            throw new Error('No patterns found for this word');
-          }
-          patternData = patterns[0]; // Already sorted by created_at desc
+          // Flat object from /api/word/:word
+          patternData = data;
           
-          // Transform nested structure to flat
+          // Data is already flat, use directly
           const transformedPattern: Pattern = {
             id: patternData.id,
-            word: patternData.word_seeds?.text || word || '',
-            image_url: patternData.word_visual_image?.image_url,
-            verbal_essence: patternData.word_verbal_essence?.content,
-            visual_brief: patternData.word_visual_brief?.content,
-            verbal_layer: patternData.word_verbal_layer?.content,
-            verbal_voicing: patternData.word_verbal_voicing?.content,
-            visual_layer: patternData.word_visual_layer?.content,
+            word: patternData.word || word || '',
+            image_url: patternData.image_url,
+            verbal_essence: patternData.verbal_essence,
+            visual_brief: patternData.visual_brief,
+            verbal_layer: patternData.verbal_layer,
+            verbal_voicing: patternData.verbal_voicing,
+            visual_layer: patternData.visual_layer,
             created_at: patternData.created_at
           };
           setPattern(transformedPattern);
