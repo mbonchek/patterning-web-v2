@@ -15,6 +15,7 @@ export function ImageLab() {
   const [flashTrace, setFlashTrace] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [showTrace, setShowTrace] = useState(false);
+  const [fullPrompt, setFullPrompt] = useState<string>('');
 
   useEffect(() => {
     fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/history`)
@@ -98,6 +99,10 @@ export function ImageLab() {
       
       if (responseData.trace) {
         setFlashTrace(responseData.trace);
+        // Extract the full prompt from trace if available
+        if (responseData.trace.request?.prompt) {
+          setFullPrompt(responseData.trace.request.prompt);
+        }
       }
     } catch (err: any) {
       setError(err.message);
@@ -156,6 +161,17 @@ export function ImageLab() {
                 rows={6}
                 className="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-white text-sm font-mono focus:outline-none focus:border-teal-500 resize-y"
               />
+            </div>
+          )}
+
+          {fullPrompt && (
+            <div>
+              <label className="block text-xs font-medium text-slate-400 mb-2">
+                Full Rendered Prompt (Sent to Gemini)
+              </label>
+              <div className="bg-slate-950 border border-slate-800 rounded px-3 py-2 text-slate-300 text-sm font-mono whitespace-pre-wrap max-h-48 overflow-y-auto">
+                {fullPrompt}
+              </div>
             </div>
           )}
 
