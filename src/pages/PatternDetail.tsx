@@ -53,19 +53,19 @@ export default function PatternDetail() {
         
         let patternData;
         if (id) {
-          // Single pattern response from /api/patterns/:id (flat structure)
-          patternData = data.pattern;
+          // Response from /api/patterns/:id (nested structure)
+          patternData = data;
           
-          // Data is already flat, use directly
+          // Extract content from nested objects
           const transformedPattern: Pattern = {
             id: patternData.id,
-            word: patternData.word,
-            image_url: patternData.image_url,
-            verbal_essence: patternData.verbal_essence,
-            visual_brief: patternData.visual_brief,
-            verbal_layer: patternData.verbal_layer,
-            verbal_voicing: patternData.verbal_voicing,
-            visual_layer: patternData.visual_layer,
+            word: patternData.word_seeds?.text || patternData.word,
+            image_url: patternData.visual_image?.image_url,
+            verbal_essence: patternData.verbal_essence?.content,
+            visual_brief: patternData.visual_brief?.content,
+            verbal_layer: patternData.verbal_layer?.content,
+            verbal_voicing: patternData.verbal_voicing?.content,
+            visual_layer: patternData.visual_layer?.content,
             created_at: patternData.created_at
           };
           setPattern(transformedPattern);
