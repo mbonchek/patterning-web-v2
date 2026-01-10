@@ -259,6 +259,7 @@ export function VoiceLab() {
   const [collectTrace, setCollectTrace] = useState(true);
   const [analyticsSummary, setAnalyticsSummary] = useState<any>(null);
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
+  const [expandedRuns, setExpandedRuns] = useState<Set<number>>(new Set());
 
   // Load history on mount
   useEffect(() => {
@@ -964,6 +965,92 @@ export function VoiceLab() {
                   </div>
                 </div>
               )}
+
+              {/* All Recent Runs with Per-Step Breakdown */}
+              <div>
+                <h2 className="text-xl font-bold mb-4 text-white">All Recent Runs</h2>
+                <div className="space-y-3">
+                  {[...analyticsSummary.parallel_runs.runs, ...analyticsSummary.verbal_only_runs.runs, ...analyticsSummary.visual_only_runs.runs]
+                    .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+                    .slice(0, 10)
+                    .map((run: any, idx: number) => {
+                      const steps = run.steps || [];
+                      const isExpanded = expandedRuns.has(idx);
+                      
+                      const toggleExpanded = () => {
+                        setExpandedRuns(prev => {
+                          const next = new Set(prev);
+                          if (next.has(idx)) {
+                            next.delete(idx);
+                          } else {
+                            next.add(idx);
+                          }
+                          return next;
+                        });
+                      };
+                      
+                      return (
+                        <div key={idx} className="bg-slate-900 rounded-lg border border-slate-800">
+                          <div 
+                            className="p-4 cursor-pointer hover:bg-slate-800/30 transition-colors"
+                            onClick={toggleExpanded}
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-4">
+                                {isExpanded ? <ChevronDown size={18} className="text-slate-400" /> : <ChevronRight size={18} className="text-slate-400" />}
+                                <span className="font-bold text-white">{run.word}</span>
+                                <span className="text-sm text-slate-400">{new Date(run.created_at).toLocaleString()}</span>
+                              </div>
+                              <div className="flex items-center gap-6">
+                                <span className="text-sm text-slate-400">Duration: <span className="text-teal-400 font-semibold">{(run.duration_ms / 1000).toFixed(1)}s</span></span>
+                                <span className="text-sm text-slate-400">Cost: <span className="text-green-400 font-semibold">${run.total_cost.toFixed(4)}</span></span>
+                                <span className="text-sm text-slate-400">Tokens: <span className="text-white">{run.total_tokens || 0}</span></span>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          {isExpanded && steps.length > 0 && (
+                            <div className="border-t border-slate-800 p-4">
+                              <h3 className="text-sm font-semibold text-slate-300 mb-3">Per-Step Breakdown</h3>
+                              <div className="bg-slate-950 rounded border border-slate-800 overflow-hidden">
+                                <table className="w-full text-sm">
+                                  <thead className="bg-slate-800">
+                                    <tr>
+                                      <th className="px-3 py-2 text-left text-xs font-semibold text-slate-300">Step</th>
+                                      <th className="px-3 py-2 text-left text-xs font-semibold text-slate-300">Model</th>
+                                      <th className="px-3 py-2 text-right text-xs font-semibold text-slate-300">Input Tokens</th>
+                                      <th className="px-3 py-2 text-right text-xs font-semibold text-slate-300">Output Tokens</th>
+                                      <th className="px-3 py-2 text-right text-xs font-semibold text-slate-300">Cost</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody className="divide-y divide-slate-800">
+                                    {steps.map((step: any, stepIdx: number) => (
+                                      <tr key={stepIdx} className="hover:bg-slate-800/30">
+                                        <td className="px-3 py-2 text-white font-mono">{step.step}</td>
+                                        <td className="px-3 py-2 text-slate-400 font-mono text-xs">{step.model}</td>
+                                        <td className="px-3 py-2 text-right text-slate-300">{step.tokens?.input || 0}</td>
+                                        <td className="px-3 py-2 text-right text-slate-300">{step.tokens?.output || 0}</td>
+                                        <td className="px-3 py-2 text-right text-green-400 font-semibold">${(step.cost?.total || 0).toFixed(4)}</td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                  <tfoot className="bg-slate-800">
+                                    <tr>
+                                      <td colSpan={2} className="px-3 py-2 text-left text-xs font-semibold text-slate-300">Total</td>
+                                      <td className="px-3 py-2 text-right text-white font-semibold">{run.total_input_tokens || 0}</td>
+                                      <td className="px-3 py-2 text-right text-white font-semibold">{run.total_output_tokens || 0}</td>
+                                      <td className="px-3 py-2 text-right text-green-400 font-bold">${run.total_cost.toFixed(4)}</td>
+                                    </tr>
+                                  </tfoot>
+                                </table>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                </div>
+              </div>
             </>
           ) : (
             <div className="text-center py-12 text-slate-400">No analytics data available yet</div>
