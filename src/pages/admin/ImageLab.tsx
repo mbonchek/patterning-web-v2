@@ -15,16 +15,33 @@ export function ImageLab() {
   const [flashTrace, setFlashTrace] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [showTrace, setShowTrace] = useState(false);
-  const [fullPrompt, setFullPrompt] = useState<string>('');
+  const [originalPrompt, setOriginalPrompt] = useState<string>('');
+  const [flashPrompt, setFlashPrompt] = useState<string>('');
+  const [promptTemplate, setPromptTemplate] = useState<string>('');
 
   useEffect(() => {
+    // Fetch available patterns
     fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/history`)
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) setAvailableWords(data);
       })
       .catch(err => console.error('Error loading words:', err));
+    
+    // Fetch prompt template
+    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/prompts/word_visual_image`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.template) setPromptTemplate(data.template);
+      })
+      .catch(err => console.error('Error loading prompt template:', err));
   }, []);
+
+  const reconstructPrompt = (template: string, wordValue: string, briefValue: string) => {
+    return template
+      .replace(/\{\{word\}\}/g, wordValue)
+      .replace(/\{\{visual_brief\}\}/g, briefValue);
+  };
 
   const handleLoadPattern = async (selectedWord: string) => {
     const pattern = availableWords.find(p => p.word === selectedWord);
@@ -38,19 +55,41 @@ export function ImageLab() {
         const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/patterns/${pattern.id}`);
         if (response.ok) {
           const data = await response.json();
-          setBrief(data.visual_brief?.content || pattern.image_brief || '');
+          const visualBrief = data.visual_brief?.content || pattern.image_brief || '';
+          setBrief(visualBrief);
+          
+          // Reconstruct the original prompt
+          if (promptTemplate) {
+            const reconstructed = reconstructPrompt(promptTemplate, selectedWord, visualBrief);
+            setOriginalPrompt(reconstructed);
+          }
         } else {
-          setBrief(pattern.image_brief || '');
+          const visualBrief = pattern.image_brief || '';
+          setBrief(visualBrief);
+          
+          // Reconstruct the original prompt
+          if (promptTemplate) {
+            const reconstructed = reconstructPrompt(promptTemplate, selectedWord, visualBrief);
+            setOriginalPrompt(reconstructed);
+          }
         }
       } catch (err) {
         console.error('Failed to load visual brief:', err);
-        setBrief(pattern.image_brief || '');
+        const visualBrief = pattern.image_brief || '';
+        setBrief(visualBrief);
+        
+        // Reconstruct the original prompt
+        if (promptTemplate) {
+          const reconstructed = reconstructPrompt(promptTemplate, selectedWord, visualBrief);
+          setOriginalPrompt(reconstructed);
+        }
       }
       
       setOriginalImageUrl(pattern.image_url || null);
       setFlashImageUrl(null);
       setFlashGenerationTime(null);
       setFlashTrace(null);
+      setFlashPrompt('');
       setError(null);
     }
   };
@@ -66,6 +105,7 @@ export function ImageLab() {
     setFlashImageUrl(null);
     setFlashGenerationTime(null);
     setFlashTrace(null);
+    setFlashPrompt('');
 
     const startTime = Date.now();
 
@@ -101,7 +141,7 @@ export function ImageLab() {
         setFlashTrace(responseData.trace);
         // Extract the full prompt from trace if available
         if (responseData.trace.request?.prompt) {
-          setFullPrompt(responseData.trace.request.prompt);
+          setFlashPrompt(responseData.trace.request.prompt);
         }
       }
     } catch (err: any) {
@@ -149,10 +189,22 @@ export function ImageLab() {
             )}
           </div>
 
+          {/* Original Prompt (Reconstructed) */}
+          {selectedPattern && originalPrompt && (
+            <div>
+              <label className="block text-xs font-medium text-slate-400 mb-2">
+                Original Prompt (sent to gemini-3-pro-image-preview)
+              </label>
+              <div className="bg-slate-950 border border-purple-800/50 rounded px-3 py-2 text-slate-300 text-sm font-mono whitespace-pre-wrap max-h-48 overflow-y-auto">
+                {originalPrompt}
+              </div>
+            </div>
+          )}
+
           {selectedPattern && (
             <div>
               <label className="block text-xs font-medium text-slate-400 mb-2">
-                Visual Brief (Edit to test different prompts)
+                Visual Brief (Edit to test different prompts with gemini-2.5-flash)
               </label>
               <textarea
                 value={brief}
@@ -164,13 +216,14 @@ export function ImageLab() {
             </div>
           )}
 
-          {fullPrompt && (
+          {/* Flash Prompt (After Generation) */}
+          {flashPrompt && (
             <div>
               <label className="block text-xs font-medium text-slate-400 mb-2">
-                Full Rendered Prompt (Sent to Gemini)
+                New Prompt (sent to gemini-2.5-flash-image)
               </label>
-              <div className="bg-slate-950 border border-slate-800 rounded px-3 py-2 text-slate-300 text-sm font-mono whitespace-pre-wrap max-h-48 overflow-y-auto">
-                {fullPrompt}
+              <div className="bg-slate-950 border border-cyan-800/50 rounded px-3 py-2 text-slate-300 text-sm font-mono whitespace-pre-wrap max-h-48 overflow-y-auto">
+                {flashPrompt}
               </div>
             </div>
           )}
