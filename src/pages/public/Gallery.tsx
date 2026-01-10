@@ -58,7 +58,7 @@ export default function Gallery() {
   };
 
   const handlePatternClick = (pattern: Pattern) => {
-    navigate(`/pattern/${pattern.id}`);
+    navigate(`/${pattern.word}`);
   };
 
   if (loading) {
