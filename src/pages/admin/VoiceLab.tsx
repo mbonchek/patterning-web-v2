@@ -872,11 +872,11 @@ export function VoiceLab() {
                         <td className="px-4 py-3 text-sm text-slate-600">—</td>
                       </tr>
                       <tr className="hover:bg-slate-800/50">
-                        <td className="px-4 py-3 font-mono text-sm text-white">imagen-3.0-generate-001</td>
+                        <td className="px-4 py-3 font-mono text-sm text-white">gemini-3-pro-image-preview</td>
                         <td className="px-4 py-3 text-sm text-slate-400">Image</td>
                         <td className="px-4 py-3 text-sm text-slate-600">—</td>
                         <td className="px-4 py-3 text-sm text-slate-600">—</td>
-                        <td className="px-4 py-3 text-sm text-cyan-400">$0.04</td>
+                        <td className="px-4 py-3 text-sm text-green-400">Free (Preview)</td>
                       </tr>
                     </tbody>
                   </table>
