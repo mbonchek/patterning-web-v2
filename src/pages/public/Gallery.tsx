@@ -57,8 +57,8 @@ export default function Gallery() {
     }
   };
 
-  const handlePatternClick = (word: string) => {
-    navigate(`/${word}`);
+  const handlePatternClick = (pattern: Pattern) => {
+    navigate(`/pattern/${pattern.id}`);
   };
 
   if (loading) {
@@ -139,7 +139,7 @@ export default function Gallery() {
                   <PatternTile
                     key={pattern.id}
                     pattern={pattern}
-                    onClick={() => handlePatternClick(pattern.word)}
+                    onClick={() => handlePatternClick(pattern)}
                   />
                 ))}
               </div>
@@ -149,7 +149,7 @@ export default function Gallery() {
                   <PatternListItem
                     key={pattern.id}
                     pattern={pattern}
-                    onClick={() => handlePatternClick(pattern.word)}
+                    onClick={() => handlePatternClick(pattern)}
                   />
                 ))}
               </div>
