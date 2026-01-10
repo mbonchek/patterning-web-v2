@@ -9,13 +9,14 @@ import { ImageLab } from './pages/admin/ImageLab';
 import { VoiceLab } from './pages/admin/VoiceLab';
 import Branching from './pages/admin/Branching';
 import PatternDetail from './pages/PatternDetail';
+import Gallery from './pages/public/Gallery';
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Redirect root to admin */}
-        <Route path="/" element={<Navigate to="/admin" replace />} />
+        {/* Public Gallery Home */}
+        <Route path="/" element={<Gallery />} />
         
         {/* Admin Routes */}
         <Route path="/admin/*" element={
