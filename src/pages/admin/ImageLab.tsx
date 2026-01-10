@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Image as ImageIcon, Loader2, Play } from 'lucide-react';
+import { Image as ImageIcon, Loader2, Play, ChevronDown, ChevronRight } from 'lucide-react';
 
 export function ImageLab() {
   const [word, setWord] = useState('');
@@ -12,7 +12,9 @@ export function ImageLab() {
   const [originalImageUrl, setOriginalImageUrl] = useState<string | null>(null);
   const [flashImageUrl, setFlashImageUrl] = useState<string | null>(null);
   const [flashGenerationTime, setFlashGenerationTime] = useState<number | null>(null);
+  const [flashTrace, setFlashTrace] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
+  const [showTrace, setShowTrace] = useState(false);
 
   useEffect(() => {
     fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/history`)
@@ -47,6 +49,7 @@ export function ImageLab() {
       setOriginalImageUrl(pattern.image_url || null);
       setFlashImageUrl(null);
       setFlashGenerationTime(null);
+      setFlashTrace(null);
       setError(null);
     }
   };
@@ -61,6 +64,7 @@ export function ImageLab() {
     setError(null);
     setFlashImageUrl(null);
     setFlashGenerationTime(null);
+    setFlashTrace(null);
 
     const startTime = Date.now();
 
@@ -84,11 +88,16 @@ export function ImageLab() {
 
       if (!response.ok) {
         setError(responseData.error || 'Failed to generate image');
+        setFlashTrace(responseData.trace || null);
         return;
       }
 
       if (responseData.image_url) {
         setFlashImageUrl(responseData.image_url);
+      }
+      
+      if (responseData.trace) {
+        setFlashTrace(responseData.trace);
       }
     } catch (err: any) {
       setError(err.message);
@@ -103,39 +112,54 @@ export function ImageLab() {
         <h1 className="text-3xl font-bold text-white mb-2 flex items-center gap-3">
           <ImageIcon className="text-teal-500" /> Image Lab - Model Comparison
         </h1>
-        <p className="text-slate-400">Compare gemini-3-pro-image-preview (original) vs gemini-2.5-flash-image (cheaper alternative)</p>
+        <p className="text-slate-400">Compare gemini-3-pro-image-preview (original) vs gemini-2.5-flash-image (15x cheaper)</p>
       </div>
 
-      {/* Pattern Selection */}
+      {/* Pattern Selection & Prompt Editing */}
       <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-6 mb-6">
-        <h2 className="text-sm font-bold text-teal-400 uppercase mb-4">Select Pattern from Library</h2>
+        <h2 className="text-sm font-bold text-teal-400 uppercase mb-4">1. Select Pattern & Edit Prompt</h2>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-xs font-medium text-slate-400 mb-2">Pattern</label>
-            <select
-              onChange={(e) => handleLoadPattern(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-white text-sm focus:outline-none focus:border-teal-500"
-            >
-              <option value="">Select a pattern...</option>
-              {availableWords.map(p => (
-                <option key={p.id} value={p.word}>{p.word}</option>
-              ))}
-            </select>
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-medium text-slate-400 mb-2">Pattern from Library</label>
+              <select
+                onChange={(e) => handleLoadPattern(e.target.value)}
+                className="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-white text-sm focus:outline-none focus:border-teal-500"
+              >
+                <option value="">Select a pattern...</option>
+                {availableWords.map(p => (
+                  <option key={p.id} value={p.word}>{p.word}</option>
+                ))}
+              </select>
+            </div>
+            
+            {selectedPattern && (
+              <div>
+                <label className="block text-xs font-medium text-slate-400 mb-2">Original Model</label>
+                <div className="bg-slate-950 border border-slate-800 rounded px-3 py-2 text-purple-400 text-sm font-mono">
+                  gemini-3-pro-image-preview (~$0.15)
+                </div>
+              </div>
+            )}
           </div>
-          
+
           {selectedPattern && (
             <div>
-              <label className="block text-xs font-medium text-slate-400 mb-2">Original Model</label>
-              <div className="bg-slate-950 border border-slate-800 rounded px-3 py-2 text-white text-sm">
-                gemini-3-pro-image-preview (~$0.15)
-              </div>
+              <label className="block text-xs font-medium text-slate-400 mb-2">
+                Visual Brief (Edit to test different prompts)
+              </label>
+              <textarea
+                value={brief}
+                onChange={(e) => setBrief(e.target.value)}
+                placeholder="Visual brief will load here..."
+                rows={6}
+                className="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-white text-sm font-mono focus:outline-none focus:border-teal-500 resize-y"
+              />
             </div>
           )}
-        </div>
 
-        {selectedPattern && (
-          <div className="mt-4">
+          {selectedPattern && (
             <button
               onClick={handleGenerateFlash}
               disabled={isGenerating || !brief.trim()}
@@ -149,12 +173,12 @@ export function ImageLab() {
               ) : (
                 <>
                   <Play size={18} />
-                  Generate with gemini-2.5-flash-image (cheaper)
+                  2. Generate with gemini-2.5-flash-image (~$0.01)
                 </>
               )}
             </button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       {/* Error */}
@@ -166,7 +190,7 @@ export function ImageLab() {
 
       {/* Comparison Grid */}
       {selectedPattern && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           
           {/* Original Image (gemini-3-pro) */}
           <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-6">
@@ -241,13 +265,47 @@ export function ImageLab() {
         </div>
       )}
 
-      {/* Brief Display */}
-      {selectedPattern && brief && (
-        <div className="mt-6 bg-slate-900/50 border border-slate-800 rounded-xl p-6">
-          <h2 className="text-sm font-bold text-slate-400 uppercase mb-4">Image Brief (Used for Both)</h2>
-          <div className="bg-slate-950 border border-slate-800 rounded p-4 text-sm text-slate-300 font-mono whitespace-pre-wrap max-h-96 overflow-y-auto">
-            {brief}
-          </div>
+      {/* Trace Data */}
+      {flashTrace && (
+        <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-6">
+          <button
+            onClick={() => setShowTrace(!showTrace)}
+            className="w-full flex items-center justify-between text-left"
+          >
+            <h2 className="text-sm font-bold text-slate-400 uppercase">Request Trace (gemini-2.5-flash)</h2>
+            {showTrace ? <ChevronDown size={18} className="text-slate-400" /> : <ChevronRight size={18} className="text-slate-400" />}
+          </button>
+          
+          {showTrace && (
+            <div className="mt-4 space-y-4">
+              {/* Model & Config */}
+              <div>
+                <h3 className="text-xs font-bold text-teal-400 uppercase mb-2">Model & Configuration</h3>
+                <div className="bg-slate-950 border border-slate-800 rounded p-3 text-xs text-slate-300 font-mono whitespace-pre-wrap">
+                  {JSON.stringify({
+                    model: 'gemini-2.5-flash-image',
+                    config: {
+                      response_modalities: ['IMAGE'],
+                      generation_config: {
+                        image_config: {
+                          aspect_ratio: '16:9',
+                          image_size: '1K'
+                        }
+                      }
+                    }
+                  }, null, 2)}
+                </div>
+              </div>
+
+              {/* Full Trace */}
+              <div>
+                <h3 className="text-xs font-bold text-orange-400 uppercase mb-2">Full Response Trace</h3>
+                <div className="bg-slate-950 border border-slate-800 rounded p-3 text-xs text-slate-400 font-mono whitespace-pre-wrap max-h-96 overflow-y-auto">
+                  {JSON.stringify(flashTrace, null, 2)}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
