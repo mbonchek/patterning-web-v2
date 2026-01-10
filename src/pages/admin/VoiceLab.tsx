@@ -247,6 +247,7 @@ function FormattedTraceViewer({ patternId, word }: { patternId: string; word: st
 }
 
 export function VoiceLab() {
+  const [activeTab, setActiveTab] = useState<'generator' | 'analytics'>('generator');
   const [inputWords, setInputWords] = useState('');
   const [trackSelection, setTrackSelection] = useState<'verbal' | 'visual' | 'both'>('both');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -256,11 +257,20 @@ export function VoiceLab() {
   const [selectedHistory, setSelectedHistory] = useState<HistoryEntry | null>(null);
   const [expandedHttpTraces, setExpandedHttpTraces] = useState<Set<number>>(new Set());
   const [collectTrace, setCollectTrace] = useState(true);
+  const [analyticsSummary, setAnalyticsSummary] = useState<any>(null);
+  const [analyticsLoading, setAnalyticsLoading] = useState(false);
 
   // Load history on mount
   useEffect(() => {
     fetchHistory();
   }, []);
+
+  // Load analytics when switching to analytics tab
+  useEffect(() => {
+    if (activeTab === 'analytics') {
+      fetchAnalytics();
+    }
+  }, [activeTab]);
 
   // Auto-refresh selected log during processing
   useEffect(() => {
@@ -273,6 +283,23 @@ export function VoiceLab() {
 
     return () => clearInterval(interval);
   }, [selectedLog?.status]);
+
+  const fetchAnalytics = async () => {
+    setAnalyticsLoading(true);
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/analytics/pattern-runs/summary`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success) {
+          setAnalyticsSummary(data.summary);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch analytics:', error);
+    } finally {
+      setAnalyticsLoading(false);
+    }
+  };
 
   const fetchHistory = async () => {
     try {
@@ -499,8 +526,35 @@ export function VoiceLab() {
           <h1 className="text-3xl font-bold text-white">Voice Lab</h1>
         </div>
         <p className="text-slate-400">Process words with full real-time HTTP trace visibility.</p>
+        
+        {/* Tab Navigation */}
+        <div className="flex gap-2 mt-6 border-b border-slate-800">
+          <button
+            onClick={() => setActiveTab('generator')}
+            className={`px-4 py-2 font-semibold transition-all ${
+              activeTab === 'generator'
+                ? 'text-teal-400 border-b-2 border-teal-400'
+                : 'text-slate-400 hover:text-slate-300'
+            }`}
+          >
+            Generator
+          </button>
+          <button
+            onClick={() => setActiveTab('analytics')}
+            className={`px-4 py-2 font-semibold transition-all ${
+              activeTab === 'analytics'
+                ? 'text-teal-400 border-b-2 border-teal-400'
+                : 'text-slate-400 hover:text-slate-300'
+            }`}
+          >
+            Analytics
+          </button>
+        </div>
       </div>
 
+      {/* Generator Tab */}
+      {activeTab === 'generator' && (
+      <>
       <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-6 mb-6">
         <textarea
           value={inputWords}
@@ -783,6 +837,93 @@ export function VoiceLab() {
               </div>
             )}
           </div>
+        </div>
+      )}
+      </>
+      )}
+
+      {/* Analytics Tab */}
+      {activeTab === 'analytics' && (
+        <div className="space-y-6">
+          {analyticsLoading ? (
+            <div className="text-center py-12 text-slate-400">Loading analytics...</div>
+          ) : analyticsSummary ? (
+            <>
+              {/* Summary Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="bg-slate-900 rounded-lg p-6 border border-slate-800">
+                  <div className="text-sm text-slate-400 mb-2">Parallel Runs</div>
+                  <div className="text-3xl font-bold text-teal-400">{analyticsSummary.parallel_runs.count}</div>
+                  <div className="text-sm text-slate-500 mt-2">
+                    Avg Speedup: <span className="text-teal-400 font-semibold">{analyticsSummary.parallel_runs.avg_speedup.toFixed(2)}x</span>
+                  </div>
+                  <div className="text-sm text-slate-500">
+                    Avg Duration: {(analyticsSummary.parallel_runs.avg_duration_ms / 1000).toFixed(1)}s
+                  </div>
+                  <div className="text-sm text-slate-500">
+                    Avg Cost: ${analyticsSummary.parallel_runs.avg_cost.toFixed(4)}
+                  </div>
+                </div>
+                
+                <div className="bg-slate-900 rounded-lg p-6 border border-slate-800">
+                  <div className="text-sm text-slate-400 mb-2">Verbal Only Runs</div>
+                  <div className="text-3xl font-bold text-purple-400">{analyticsSummary.verbal_only_runs.count}</div>
+                  <div className="text-sm text-slate-500 mt-2">
+                    Avg Duration: {(analyticsSummary.verbal_only_runs.avg_duration_ms / 1000).toFixed(1)}s
+                  </div>
+                  <div className="text-sm text-slate-500">
+                    Avg Cost: ${analyticsSummary.verbal_only_runs.avg_cost.toFixed(4)}
+                  </div>
+                </div>
+                
+                <div className="bg-slate-900 rounded-lg p-6 border border-slate-800">
+                  <div className="text-sm text-slate-400 mb-2">Visual Only Runs</div>
+                  <div className="text-3xl font-bold text-cyan-400">{analyticsSummary.visual_only_runs.count}</div>
+                  <div className="text-sm text-slate-500 mt-2">
+                    Avg Duration: {(analyticsSummary.visual_only_runs.avg_duration_ms / 1000).toFixed(1)}s
+                  </div>
+                  <div className="text-sm text-slate-500">
+                    Avg Cost: ${analyticsSummary.visual_only_runs.avg_cost.toFixed(4)}
+                  </div>
+                </div>
+              </div>
+
+              {/* Recent Parallel Runs */}
+              {analyticsSummary.parallel_runs.runs.length > 0 && (
+                <div>
+                  <h2 className="text-xl font-bold mb-4">Recent Parallel Runs</h2>
+                  <div className="bg-slate-900 rounded-lg border border-slate-800 overflow-hidden">
+                    <table className="w-full">
+                      <thead className="bg-slate-800">
+                        <tr>
+                          <th className="px-4 py-3 text-left text-sm font-semibold">Word</th>
+                          <th className="px-4 py-3 text-left text-sm font-semibold">Verbal</th>
+                          <th className="px-4 py-3 text-left text-sm font-semibold">Visual</th>
+                          <th className="px-4 py-3 text-left text-sm font-semibold">Parallel</th>
+                          <th className="px-4 py-3 text-left text-sm font-semibold">Speedup</th>
+                          <th className="px-4 py-3 text-left text-sm font-semibold">Cost</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-800">
+                        {analyticsSummary.parallel_runs.runs.map((run: any, idx: number) => (
+                          <tr key={idx} className="hover:bg-slate-800/50">
+                            <td className="px-4 py-3 font-semibold">{run.word}</td>
+                            <td className="px-4 py-3 text-purple-400">{(run.verbal_track_ms / 1000).toFixed(1)}s</td>
+                            <td className="px-4 py-3 text-cyan-400">{(run.visual_track_ms / 1000).toFixed(1)}s</td>
+                            <td className="px-4 py-3 text-teal-400">{(run.actual_parallel_ms / 1000).toFixed(1)}s</td>
+                            <td className="px-4 py-3 text-green-400 font-semibold">{run.speedup.toFixed(2)}x</td>
+                            <td className="px-4 py-3">${run.total_cost.toFixed(4)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="text-center py-12 text-slate-400">No analytics data available yet</div>
+          )}
         </div>
       )}
     </div>
